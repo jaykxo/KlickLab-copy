@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
   }
 }
