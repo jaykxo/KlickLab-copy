@@ -255,7 +255,7 @@ const Test: React.FC = () => {
         <div className="mt-4 text-sm text-gray-600">
           💡 외부 페이지에서 버튼을 클릭하면 실시간으로 차트가 업데이트됩니다!
           <br />
-          📍 외부 페이지: <span className="font-mono bg-gray-100 px-2 py-1 rounded">http://localhost:3000/demo</span>
+          📍 외부 페이지: <span className="font-mono bg-gray-100 px-2 py-1 rounded">http://43.200.8.73/</span>
         </div>
       </div>
 
