@@ -1,5 +1,7 @@
 (function () {
   let currentUserId = null;
+  let currentUserGender = null;
+  let currentUserAge = null;
   let isReady = false;
   let eventQueue = [];
 
@@ -61,12 +63,14 @@
     };
   };
 
-  const sendEvent = (eventName, properties = {}, userId = null) => {
+  const sendEvent = (eventName, properties = {}, userId = null, userAge = null, userGender = null) => {
     const eventData = {
       event_name: eventName,
       timestamp: Date.now(),
       client_id: getClientId(),
       user_id: userId || currentUserId,
+      user_age: userAge || currentUserAge,
+      user_gender: userGender || currentUserGender,
       session_id: getSessionId(),
       properties: {
         page_path: window.location.pathname,
@@ -92,25 +96,50 @@
     }
   };
 
-  function setUserId(id) {
+  function normalizeAge(age) {
+    if (typeof age === "number") {
+      return `${Math.floor(age / 10) * 10}s`;
+    }
+
+    if (typeof age === "string") {
+      if (!isNaN(age)) {
+        return `${Math.floor(Number(age) / 10) * 10}s`;
+      }
+
+      const match = age.match(/(\d{2})/);
+      if (match) {
+        return `${match[1]}s`;
+      }
+    }
+
+    return "unknown";
+  }
+
+  function setUserId(id, gender, age) {
+    const normalizedAge = normalizeAge(age)
     currentUserId = id;
+    currentUserGender = gender;
+    currentUserAge = normalizedAge;
     isReady = true;
 
     // 큐에 쌓인 이벤트들 전송
     while (eventQueue.length > 0) {
       const event = eventQueue.shift();
       event.user_id = id;
+      event.user_age = normalizedAge;
+      event.user_gender = gender;
       dispatchEvent(event);
     }
   }
 
   function dispatchEvent(eventData) {
-    fetch("http://localhost:3001/collect", {
+    fetch("http://localhost:3000/collect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(eventData),
+      keepalive: true,
     }).catch(console.error);
-    console.log(JSON.stringify(eventData));
+    // console.log(JSON.stringify(eventData));
   }
 
   // 전역으로 등록
@@ -123,10 +152,14 @@
     parseTrafficSource,
   };
 
-  // 페이지 로딩 시 자동 page_view 전송
-  // window.addEventListener("DOMContentLoaded", () => {
-  //   sendEvent("page_view");
-  // });
+  window.addEventListener("DOMContentLoaded", () => {
+    sendEvent("page_enter");
+  });
+
+  window.addEventListener("beforeunload", () => {
+    analytics.sendEvent("page_exit");
+  });
+
   function listenForPageViews() {
     let lastPath = window.location.pathname;
 
