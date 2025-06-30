@@ -22,13 +22,13 @@ const Test: React.FC = () => {
   
   // 막대그래프 데이터
   const [barChartData, setBarChartData] = useState([
-    { label: 'button 1', value: 0, color: '#3B82F6' },
+    { label: 'button 1', value: 0, color: '#EF4444' },
     { label: 'button 2', value: 0, color: '#3B82F6' },
-    { label: 'button 3', value: 0, color: '#3B82F6' },
-    { label: 'button 4', value: 0, color: '#3B82F6' },
-    { label: 'button 5', value: 0, color: '#3B82F6' },
-    { label: 'button 6', value: 0, color: '#3B82F6' },
-    { label: 'button 7', value: 0, color: '#3B82F6' }
+    { label: 'button 3', value: 0, color: '#10B981' },
+    { label: 'button 4', value: 0, color: '#F59E0B' },
+    { label: 'button 5', value: 0, color: '#8B5CF6' },
+    { label: 'button 6', value: 0, color: '#EC4899' },
+    { label: 'button 7', value: 0, color: '#06B6D4' }
   ]);
 
   // 파이차트 데이터 - 버튼별 클릭 비율 (동일한 점유율)
