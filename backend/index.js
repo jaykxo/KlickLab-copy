@@ -1,16 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-app.use(cors());
+const path = require("path");
 const PORT = 3001;
 
-// PostgreSQL 연결 설정
 const pool = require('./src/config/db');
-
-// JSON 파싱 미들웨어
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+// app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['POST'],
+}));
 
-// POST 수신 엔드포인트
 app.post('/collect', async (req, res) => {
   const data = req.body;
 
