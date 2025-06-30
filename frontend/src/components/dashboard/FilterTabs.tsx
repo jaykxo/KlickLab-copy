@@ -47,15 +47,15 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({ filters, onFilterChange 
     value: string; 
     onChange: (value: string) => void; 
   }) => (
-    <div className="flex flex-col gap-2">
-      <h4 className="text-sm font-medium text-gray-700">{title}</h4>
-      <div className="flex gap-1">
+    <div className="flex flex-col gap-3 items-center">
+      <h4 className="text-sm font-medium text-gray-700 text-center">{title}</h4>
+      <div className="flex gap-1 flex-wrap justify-center">
         {options.map((option) => (
           <button
             key={option.value}
             onClick={() => onChange(option.value)}
             className={clsx(
-              'px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200',
+              'px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 whitespace-nowrap',
               value === option.value
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -70,12 +70,12 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({ filters, onFilterChange 
 
   return (
     <div className="card">
-      <div className="mb-4">
+      <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900">필터</h3>
         <p className="text-sm text-gray-600">데이터를 원하는 조건으로 필터링하세요</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
         <FilterGroup
           title="기간"
           options={periodOptions}

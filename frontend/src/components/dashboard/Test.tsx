@@ -56,14 +56,14 @@ const Test: React.FC = () => {
       name: 'button 2',
       value: 0,
       change: 0,
-      icon: '🟠'
+      icon: '🔵'
     },
     {
       rank: 3,
       name: 'button 3',
       value: 0,
       change: 0,
-      icon: '🟡'
+      icon: '🟢'
     }
   ]);
 
@@ -103,7 +103,7 @@ const Test: React.FC = () => {
           name: item.label,
           value: item.value,
           change: Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10,
-          icon: ['🔴', '🟠', '🟡'][rankIndex]
+          icon: ['🔴', '🔵', '🟢'][rankIndex]
         }));
 
         setRankingData(newRankingData);
@@ -114,15 +114,11 @@ const Test: React.FC = () => {
 
   // 외부 연결 시뮬레이션
   useEffect(() => {
-    // 연결 상태 시뮬레이션 (실제 구현 시 제거)
-    setTimeout(() => setIsConnected(true), 1000);
-    
-    // API 폴링 방식 (팀원이 REST API를 만들었다면)
-    // 팀원이 API 서버 주소를 알려주면 이 주석을 해제하세요!
-    /*
+    // 실제 API 연결 (배포된 버튼 페이지에서 데이터 수신)
     const pollData = async () => {
       try {
-        const response = await fetch('http://your-team-server:port/api/button-clicks');
+        // 배포된 서버의 API 주소로 변경
+        const response = await fetch('http://43.200.8.73/api/button-clicks');
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴
@@ -184,52 +180,51 @@ const Test: React.FC = () => {
       }
     };
     
-    // 차트 업데이트 함수
-    const updateChartsFromData = (buttonClicks: Record<string, number>) => {
-      const totalClicks = Object.values(buttonClicks).reduce((sum, count) => sum + Number(count), 0);
-      
-      if (totalClicks > 0) {
-        // 파이차트 업데이트
-        const newPieData = barChartData.map((item, index) => {
-          const buttonId = `button${index + 1}`;
-          const clickCount = buttonClicks[buttonId] || 0;
-          return {
-            label: item.label,
-            value: Math.round((Number(clickCount) / totalClicks) * 100),
-            color: pieChartData[index]?.color || '#3B82F6'
-          };
-        });
-        setPieChartData(newPieData);
-        
-        // 랭킹 업데이트
-        const sortedButtons = Object.entries(buttonClicks)
-          .map(([buttonId, count]) => ({
-            buttonId,
-            count: Number(count),
-            index: parseInt(buttonId.replace('button', '')) - 1
-          }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 3);
-        
-        const newRankingData = sortedButtons.map((item, rankIndex) => ({
-          rank: rankIndex + 1,
-          name: `button ${item.index + 1}`,
-          value: item.count,
-          change: Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
-          icon: ['🔴', '🟠', '🟡'][rankIndex]
-        }));
-        
-        setRankingData(newRankingData);
-      }
-    };
-    
     // 5초마다 데이터 확인
     const interval = setInterval(pollData, 5000);
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
-    */
   }, []);
+
+  // 차트 업데이트 함수
+  const updateChartsFromData = (buttonClicks: Record<string, number>) => {
+    const totalClicks = Object.values(buttonClicks).reduce((sum, count) => sum + Number(count), 0);
+    
+    if (totalClicks > 0) {
+      // 파이차트 업데이트
+      const newPieData = barChartData.map((item, index) => {
+        const buttonId = `button${index + 1}`;
+        const clickCount = buttonClicks[buttonId] || 0;
+        return {
+          label: item.label,
+          value: Math.round((Number(clickCount) / totalClicks) * 100),
+          color: pieChartData[index]?.color || '#3B82F6'
+        };
+      });
+      setPieChartData(newPieData);
+      
+      // 랭킹 업데이트
+      const sortedButtons = Object.entries(buttonClicks)
+        .map(([buttonId, count]) => ({
+          buttonId,
+          count: Number(count),
+          index: parseInt(buttonId.replace('button', '')) - 1
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+      
+      const newRankingData = sortedButtons.map((item, rankIndex) => ({
+        rank: rankIndex + 1,
+        name: `button ${item.index + 1}`,
+        value: item.count,
+        change: Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
+        icon: ['🔴', '🔵', '🟢'][rankIndex]
+      }));
+      
+      setRankingData(newRankingData);
+    }
+  };
 
   const maxBarValue = Math.max(...barChartData.map(d => d.value));
 
@@ -268,7 +263,7 @@ const Test: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <BarChart3 className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900">버튼별 클릭 횟수</h2>
+          <h2 className="text-lg font-semibold text-gray-900">버튼 클릭 횟수</h2>
         </div>
         
         <div className="flex items-end justify-between h-64 px-4 pb-4">
@@ -294,7 +289,7 @@ const Test: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 mb-6">
             <PieChart className="w-5 h-5 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-900">버튼별 클릭 비율</h2>
+            <h2 className="text-lg font-semibold text-gray-900">버튼 클릭 비율</h2>
           </div>
           
           <div className="flex items-center justify-center">
