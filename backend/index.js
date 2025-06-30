@@ -87,7 +87,7 @@ app.post('/api/analytics/collect', async (req, res) => {
       referrer: data.properties?.referrer ?? null,
 
       // flatten device context
-      device_type: data.context?.device?.type ?? null,
+      device_type: data.context?.device?.device_type ?? null,
       os: data.context?.device?.os ?? null,
       browser: data.context?.device?.browser ?? null,
       language: data.context?.device?.language ?? null,
@@ -96,8 +96,8 @@ app.post('/api/analytics/collect', async (req, res) => {
       timezone: data.context?.geo?.timezone ?? null,
 
       // flatten traffic_source
-      traffic_medium: data.context?.traffic_source?.medium ?? null,
-      traffic_source: data.context?.traffic_source?.source ?? null,
+      traffic_medium: data.context?.traffic_source?.traffic_medium ?? null,
+      traffic_source: data.context?.traffic_source?.traffic_source ?? null,
       traffic_campaign: data.context?.traffic_source?.campaign ?? null,
 
       // flatten user meta
