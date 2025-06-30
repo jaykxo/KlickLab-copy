@@ -144,6 +144,39 @@ const Test: React.FC = () => {
           updateChartsFromData(data.buttonClicks);
         }
         
+        // 팀원 SDK 로그 형식에 맞는 처리 (element_path 기반)
+        if (data.clickEvents) {
+          // 예: [{ element_path: "button:nth-child(1)", ... }, { element_path: "button:nth-child(7)", ... }]
+          const buttonCounts = {
+            button1: 0, button2: 0, button3: 0, button4: 0, button5: 0, button6: 0, button7: 0
+          };
+          
+          data.clickEvents.forEach((event: any) => {
+            // element_path에서 버튼 번호 추출
+            const match = event.element_path?.match(/button:nth-child\((\d+)\)/);
+            if (match) {
+              const buttonNumber = parseInt(match[1]);
+              if (buttonNumber >= 1 && buttonNumber <= 7) {
+                const buttonKey = `button${buttonNumber}`;
+                buttonCounts[buttonKey as keyof typeof buttonCounts]++;
+              }
+            }
+            
+            // target_text로도 확인 (Button 1, Button 2, ...)
+            const textMatch = event.target_text?.match(/Button (\d+)/);
+            if (textMatch) {
+              const buttonNumber = parseInt(textMatch[1]);
+              if (buttonNumber >= 1 && buttonNumber <= 7) {
+                const buttonKey = `button${buttonNumber}`;
+                buttonCounts[buttonKey as keyof typeof buttonCounts]++;
+              }
+            }
+          });
+          
+          // 차트 업데이트
+          updateChartsFromData(buttonCounts);
+        }
+        
         setIsConnected(true);
       } catch (error) {
         console.error('API 호출 오류:', error);
