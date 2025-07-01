@@ -118,7 +118,7 @@ const Test: React.FC = () => {
     const pollData = async () => {
       try {
         // 배포된 서버의 API 주소로 변경
-        const response = await fetch('http://43.200.8.73/api/button-clicks');
+        const response = await fetch('http://localhost:3000/api/button-clicks');
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴
@@ -180,8 +180,10 @@ const Test: React.FC = () => {
       }
     };
     
-    // 0.5초마다 데이터 확인 (거의 실시간)
-    const interval = setInterval(pollData, 500);
+
+    // 0.1초마다 데이터 확인
+    const interval = setInterval(pollData, 100);
+
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
@@ -218,7 +220,7 @@ const Test: React.FC = () => {
         rank: rankIndex + 1,
         name: `button ${item.index + 1}`,
         value: item.count,
-        change: Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
+        change: 0, //Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
         icon: ['🔴', '🔵', '🟢'][rankIndex]
       }));
       
