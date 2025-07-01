@@ -92,15 +92,13 @@ app.get('/api/button-clicks', async (req, res) => {
       })
     );
 
-    const clickEvents = Object.fromEntries(
-      Array.from({length: 7}, (_, i) => {
-        const index = i + 1;
-        return {
-          element_path: `button:nth-child(${index})`,
-          target_text: `Button ${index}`,
-        };
-      })
-    );
+    const clickEvents = Array.from({ length: 7 }, (_, i) => {
+      const index = i + 1;
+      return {
+        element_path: `button:nth-child(${index})`,
+        target_text: `Button ${index}`,
+      };
+    });
 
     res.status(200).json({ buttonClicks: buttonClicks, clickEvents: clickEvents });
   } catch (err) {
