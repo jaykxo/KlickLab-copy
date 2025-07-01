@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, PieChart, Trophy, TrendingUp, Wifi, WifiOff } from 'lucide-react';
+import { TestFilterTabs } from './TestFilterTabs';
 
 // 랭킹 데이터 타입
 interface RankingItem {
@@ -19,6 +20,17 @@ interface ChartData {
 
 const Test: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
+  
+  // 필터 상태
+  const [filters, setFilters] = useState({
+    mainCategory: 'all' as 'all' | 'mobile' | 'desktop',
+    subCategory: 'all' as 'all' | 'ios' | 'android' | 'macos' | 'windows'
+  });
+
+  // 필터 변경 핸들러
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
   
   // 막대그래프 데이터
   const [barChartData, setBarChartData] = useState([
@@ -74,8 +86,21 @@ const Test: React.FC = () => {
     // 실제 API 연결 (배포된 버튼 페이지에서 데이터 수신)
     const pollData = async () => {
       try {
-        // 배포된 서버의 API 주소로 변경
-        const response = await fetch('http://localhost:3000/api/button-clicks');
+        // 필터에 따라 다른 API 엔드포인트 호출
+        let apiUrl = 'http://3.39.230.90:3000/api/button-clicks';
+        
+        if (filters.mainCategory !== 'all') {
+          if (filters.subCategory === 'all') {
+            // 카테고리 전체 (모바일 전체, 데스크탑 전체)
+            apiUrl = `http://3.39.230.90:3000/api/button-clicks?platform=${filters.mainCategory}`;
+          } else {
+            // 특정 플랫폼
+            apiUrl = `http://3.39.230.90:3000/api/button-clicks?platform=${filters.subCategory}`;
+          }
+        }
+        
+        console.log('API 호출:', apiUrl);
+        const response = await fetch(apiUrl);
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴
@@ -116,7 +141,7 @@ const Test: React.FC = () => {
             }
             
             // target_text로도 확인 (Button 1, Button 2, ...)
-            const textMatch = event.target_text?.match(/Button (\d+)/);
+            const textMatch = event.target_text?.match(/button (\d+)/);
             if (textMatch) {
               const buttonNumber = parseInt(textMatch[1]);
               if (buttonNumber >= 1 && buttonNumber <= 7) {
@@ -144,51 +169,59 @@ const Test: React.FC = () => {
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
-  }, []);
+  }, [filters.mainCategory, filters.subCategory]); // 필터가 변경될 때마다 다시 실행
+
+  // 필터링된 데이터 계산 함수
+  const getFilteredData = (buttonClicks: Record<string, number>) => {
+    // API에서 받은 실제 데이터를 그대로 사용
+    return buttonClicks;
+  };
 
   // 차트 업데이트 함수
   const updateChartsFromData = (buttonClicks: Record<string, number>) => {
-    const totalClicks = Object.values(buttonClicks).reduce((sum, count) => sum + Number(count), 0);
+    const filteredClicks = getFilteredData(buttonClicks);
+    const totalClicks = Object.values(filteredClicks).reduce((sum, count) => sum + Number(count), 0);
     
-    if (totalClicks > 0) {
-      // 파이차트 업데이트
-      const newPieData = barChartData.map((item, index) => {
-        const buttonId = `button${index + 1}`;
-        const clickCount = buttonClicks[buttonId] || 0;
-        return {
-          label: item.label,
-          value: Math.round((Number(clickCount) / totalClicks) * 100),
-          color: pieChartData[index]?.color || '#3B82F6'
-        };
-      });
-      setPieChartData(newPieData);
-      
-      // 랭킹 업데이트
-      const sortedButtons = Object.entries(buttonClicks)
-        .map(([buttonId, count]) => ({
-          buttonId,
-          count: Number(count),
-          index: parseInt(buttonId.replace('button', '')) - 1
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3);
-      
-      const newRankingData = sortedButtons.map((item, rankIndex) => ({
-        rank: rankIndex + 1,
-        name: `button ${item.index + 1}`,
-        value: item.count,
-        change: 0, //Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
-        icon: ['🔴', '🔵', '🟢'][rankIndex]
-      }));
-      
-      setRankingData(newRankingData);
-    }
+          if (totalClicks > 0) {
+        // 파이차트 업데이트
+        const newPieData = barChartData.map((item, index) => {
+          const buttonId = `button${index + 1}`;
+          const clickCount = filteredClicks[buttonId] || 0;
+          return {
+            label: item.label,
+            value: Math.round((Number(clickCount) / totalClicks) * 100),
+            color: pieChartData[index]?.color || '#3B82F6'
+          };
+        });
+        setPieChartData(newPieData);
+        
+        // 랭킹 업데이트
+        const sortedButtons = Object.entries(filteredClicks)
+          .map(([buttonId, count]) => ({
+            buttonId,
+            count: Number(count),
+            index: parseInt(buttonId.replace('button', '')) - 1
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 3);
+        
+        const newRankingData = sortedButtons.map((item, rankIndex) => ({
+          rank: rankIndex + 1,
+          name: `button ${item.index + 1}`,
+          value: item.count,
+          change: 0, // 실제로는 이전 데이터와 비교
+          icon: ['🔴', '🔵', '🟢'][rankIndex]
+        }));
+        
+        setRankingData(newRankingData);
+      }
   };
 
   const maxBarValue = Math.max(...barChartData.map(d => d.value));
 
   return (
     <div className="space-y-8">
+
       {/* 연결 상태 표시 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -218,6 +251,9 @@ const Test: React.FC = () => {
         </div>
       </div>
 
+      {/* 필터 */}
+      <TestFilterTabs filters={filters} onFilterChange={handleFilterChange} />
+      
       {/* 막대그래프 섹션 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
@@ -284,8 +320,8 @@ const Test: React.FC = () => {
               {/* 중앙 텍스트 */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">100%</div>
-                  <div className="text-sm text-gray-600">전체</div>
+                  {/* <div className="text-2xl font-bold text-gray-900">100%</div>
+                  <div className="text-sm text-gray-600">전체</div> */}
                 </div>
               </div>
             </div>
