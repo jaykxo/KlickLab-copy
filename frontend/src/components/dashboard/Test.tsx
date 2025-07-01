@@ -172,7 +172,7 @@ const Test: React.FC = () => {
           // 차트 업데이트
           updateChartsFromData(buttonCounts);
         }
-        
+
         setIsConnected(true);
       } catch (error) {
         console.error('API 호출 오류:', error);

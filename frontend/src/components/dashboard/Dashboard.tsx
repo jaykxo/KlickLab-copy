@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatCard } from '../ui/StatCard';
 import { Sidebar } from '../ui/Sidebar';
 import { VisitorChart } from './VisitorChart';
@@ -6,7 +6,8 @@ import { FilterTabs } from './FilterTabs';
 import { ExitPageChart } from './ExitPageChart';
 import { PageTimeChart } from './PageTimeChart';
 import Test from './Test';
-import { mockDashboardData } from '../../data/mockData';
+// import { mockDashboardData } from '../../data/mockData';
+import type { DataTypes } from '../../data/types';
 import { BarChart3, Users, TrendingUp, Clock } from 'lucide-react';
 
 // 타입 정의를 직접 포함
@@ -40,6 +41,22 @@ export const Dashboard: React.FC = () => {
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
+
+  const [mockDashboardData, setMockDashboardData] = useState<DataTypes | null>(null);
+  useEffect(() => {
+    fetch("http://localhost:3000/api/analytics/getDashboardData", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("받은 데이터:", data);
+        setMockDashboardData(data);
+      })
+      .catch((err) => {
+        console.error("데이터 불러오기 실패:", err);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -100,48 +117,49 @@ export const Dashboard: React.FC = () => {
                 <FilterTabs filters={filters} onFilterChange={handleFilterChange} />
               </div>
 
-              {/* 통계 카드 */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <Users className="w-5 h-5 text-gray-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">주요 통계</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mockDashboardData.stats.map((stat, index) => (
-                    <StatCard key={index} data={stat} />
-                  ))}
-                </div>
-              </div>
-
-              {/* 방문자 추이 차트 */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-gray-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">방문자 추이</h2>
-                </div>
-                <VisitorChart data={mockDashboardData.visitorTrend} />
-              </div>
-
-              {/* 차트 섹션 */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* 이탈 페이지 분석 */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clock className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">이탈 페이지 분석</h2>
+              {mockDashboardData && (
+                <>
+                  {/* 통계 카드 */}
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users className="w-5 h-5 text-gray-600" />
+                      <h2 className="text-lg font-semibold text-gray-900">주요 통계</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {mockDashboardData.stats.map((stat, index) => (
+                        <StatCard key={index} data={stat} />
+                      ))}
+                    </div>
                   </div>
-                  <ExitPageChart data={mockDashboardData.exitPages} />
-                </div>
 
-                {/* 페이지별 체류시간 */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clock className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">페이지별 체류시간</h2>
+                  {/* 방문자 추이 */}
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <TrendingUp className="w-5 h-5 text-gray-600" />
+                      <h2 className="text-lg font-semibold text-gray-900">방문자 추이</h2>
+                    </div>
+                    <VisitorChart data={mockDashboardData.visitorTrend} />
                   </div>
-                  <PageTimeChart data={mockDashboardData.pageTimes} />
-                </div>
-              </div>
+
+                  {/* 기타 차트 */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-5 h-5 text-gray-600" />
+                        <h2 className="text-lg font-semibold text-gray-900">이탈 페이지 분석</h2>
+                      </div>
+                      <ExitPageChart data={mockDashboardData.exitPages} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-5 h-5 text-gray-600" />
+                        <h2 className="text-lg font-semibold text-gray-900">페이지별 체류시간</h2>
+                      </div>
+                      <PageTimeChart data={mockDashboardData.pageTimes} />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
