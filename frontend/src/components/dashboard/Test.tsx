@@ -31,7 +31,7 @@ const Test: React.FC = () => {
     { label: 'button 7', value: 0, color: '#06B6D4' }
   ]);
 
-  // 파이차트 데이터 - 버튼별 클릭 비율 (동일한 점유율)
+  // 파이차트 데이터 - 버튼별 클릭 비율 (초기 동일한 점유율)
   const [pieChartData, setPieChartData] = useState<ChartData[]>([
     { label: 'button 1', value: 14.3, color: '#EF4444' },
     { label: 'button 2', value: 14.3, color: '#3B82F6' },
@@ -180,8 +180,10 @@ const Test: React.FC = () => {
       }
     };
     
+
     // 0.1초마다 데이터 확인
     const interval = setInterval(pollData, 100);
+
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
