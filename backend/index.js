@@ -21,19 +21,25 @@ app.use('/api/analytics', analyticsRoutes);
 /* 데모용 테스트 API */
 app.get('/api/button-clicks', async (req, res) => {
   // const data = req.body;
+  const query = req.query;
+  // console.log(query);
   try {
     const db = await connectMongo();
     const logs = db.collection('logs');
 
-    const queries = await logs
-      .find({
-        $and: [
-          { event_name: "auto_click" },
-          { "properties.target_text": /^button [1-7]$/ },
-          { "properties.is_button": true }
-        ]
-      })
-      .toArray();
+    const andConditions = [
+      { event_name: "auto_click" },
+      { "properties.target_text": /^button [1-7]$/ },
+      { "properties.is_button": true },
+    ];
+    
+    const orConditions = [];
+    if (Object.keys(query).length > 0) {
+      orConditions.push({ device_type: query.platform });
+      orConditions.push({ os: query.platform });
+      andConditions.push({ $or: orConditions });
+    }
+    const queries = await logs.find({ $and: andConditions }).toArray();
 
     let clicks = [0, 0, 0, 0, 0, 0, 0, 0];
     for (let i = 0; i < queries.length; i++) {
