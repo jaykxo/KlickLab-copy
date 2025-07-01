@@ -159,7 +159,7 @@ const Test: React.FC = () => {
             }
             
             // target_text로도 확인 (Button 1, Button 2, ...)
-            const textMatch = event.target_text?.match(/Button (\d+)/);
+            const textMatch = event.target_text?.match(/button (\d+)/);
             if (textMatch) {
               const buttonNumber = parseInt(textMatch[1]);
               if (buttonNumber >= 1 && buttonNumber <= 7) {
