@@ -74,7 +74,7 @@ export const Dashboard: React.FC = () => {
                   {activeTab === 'engagement' && '체류시간 및 참여도 분석'}
                   {activeTab === 'reports' && '상세 리포트 및 데이터 내보내기'}
                   {activeTab === 'settings' && '시스템 설정 및 계정 관리'}
-                  {activeTab === 'test' && '차트 및 랭킹 데모'}
+                  {activeTab === 'test' && '버튼 클릭 차트 및 랭킹'}
                 </p>
               </div>
               
