@@ -118,7 +118,7 @@ const Test: React.FC = () => {
     const pollData = async () => {
       try {
         // 배포된 서버의 API 주소로 변경
-        const response = await fetch('http://localhost:3000/api/button-clicks');
+        const response = await fetch('http://13.125.232.111:3000/api/button-clicks');
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴
@@ -159,7 +159,7 @@ const Test: React.FC = () => {
             }
             
             // target_text로도 확인 (Button 1, Button 2, ...)
-            const textMatch = event.target_text?.match(/Button (\d+)/);
+            const textMatch = event.target_text?.match(/button (\d+)/);
             if (textMatch) {
               const buttonNumber = parseInt(textMatch[1]);
               if (buttonNumber >= 1 && buttonNumber <= 7) {
@@ -218,7 +218,7 @@ const Test: React.FC = () => {
         rank: rankIndex + 1,
         name: `button ${item.index + 1}`,
         value: item.count,
-        change: 0, //Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10, // 실제로는 이전 데이터와 비교
+        change: 0, // 실제로는 이전 데이터와 비교
         icon: ['🔴', '🔵', '🟢'][rankIndex]
       }));
       
@@ -325,8 +325,8 @@ const Test: React.FC = () => {
               {/* 중앙 텍스트 */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">100%</div>
-                  <div className="text-sm text-gray-600">전체</div>
+                  {/* <div className="text-2xl font-bold text-gray-900">100%</div>
+                  <div className="text-sm text-gray-600">전체</div> */}
                 </div>
               </div>
             </div>
