@@ -325,8 +325,8 @@ const Test: React.FC = () => {
               {/* 중앙 텍스트 */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">100%</div>
-                  <div className="text-sm text-gray-600">전체</div>
+                  {/* <div className="text-2xl font-bold text-gray-900">100%</div>
+                  <div className="text-sm text-gray-600">전체</div> */}
                 </div>
               </div>
             </div>

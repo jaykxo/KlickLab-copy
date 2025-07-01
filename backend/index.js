@@ -48,13 +48,10 @@ app.get('/api/button-clicks', async (req, res) => {
       })
     );
 
-    const clickEvents = Array.from({ length: 7 }, (_, i) => {
-      const index = i + 1;
-      return {
-        element_path: `button:nth-child(${index})`,
-        target_text: `button ${index}`,
-      };
-    });
+    const clickEvents = queries.map(q => ({
+      element_path: q.properties?.element_path ?? '',
+      target_text: q.properties?.target_text ?? '',
+    }));
 
     res.status(200).json({ buttonClicks: buttonClicks, clickEvents: clickEvents });
   } catch (err) {
