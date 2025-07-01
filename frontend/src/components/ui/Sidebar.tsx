@@ -141,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 border-t border-gray-200">
           <div className="text-xs text-gray-500">
             <div>버전 1.0.0</div>
-            <div>© 2024 KlickLab</div>
+            <div>© 2025 KlickLab</div>
           </div>
         </div>
       )}
