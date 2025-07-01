@@ -11,14 +11,9 @@ router.post("/collect", async (req, res) => {
     const db = await connectMongo();
     const logs = db.collection("logs");
 
-    const UstTime = new Date(data.timestamp);
-    const kstTime = UstTime.toLocaleString("ko-KR", {
-      timeZone: "Asia/Seoul",
-    }); // UST → KST로 변경
-
     await logs.insertOne({
       event_name: data.event_name,
-      timestamp: kstTime, // data.timestamp
+      timestamp: data.timestamp,
       client_id: data.client_id,
       user_id: data.user_id,
       session_id: data.session_id,

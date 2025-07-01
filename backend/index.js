@@ -29,7 +29,7 @@ app.get('/api/button-clicks', async (req, res) => {
       .find({
         $and: [
           { event_name: "auto_click" },
-          { "properties.target_text": /^Button [1-7]$/ },
+          { "properties.target_text": /^button [1-7]$/ },
           { "properties.is_button": true }
         ]
       })
@@ -52,7 +52,7 @@ app.get('/api/button-clicks', async (req, res) => {
       const index = i + 1;
       return {
         element_path: `button:nth-child(${index})`,
-        target_text: `Button ${index}`,
+        target_text: `button ${index}`,
       };
     });
 

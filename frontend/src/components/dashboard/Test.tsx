@@ -158,8 +158,8 @@ const Test: React.FC = () => {
               }
             }
             
-            // target_text로도 확인 (Button 1, Button 2, ...)
-            const textMatch = event.target_text?.match(/Button (\d+)/);
+            // target_text로도 확인 (button 1, button 2, ...)
+            const textMatch = event.target_text?.match(/button (\d+)/);
             if (textMatch) {
               const buttonNumber = parseInt(textMatch[1]);
               if (buttonNumber >= 1 && buttonNumber <= 7) {
@@ -181,7 +181,7 @@ const Test: React.FC = () => {
     };
     
     // 0.1초마다 데이터 확인
-    const interval = setInterval(pollData, 100);
+    const interval = setInterval(pollData, 100000);
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
