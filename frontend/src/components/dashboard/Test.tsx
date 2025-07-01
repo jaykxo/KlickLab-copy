@@ -310,7 +310,7 @@ const Test: React.FC = () => {
               <div 
                 className="w-12 bg-blue-500 rounded-t-lg transition-all duration-300 hover:bg-blue-600"
                 style={{ 
-                  height: `${(item.value / maxBarValue) * 200}px`,
+                  height: maxBarValue > 0 ? `${(item.value / maxBarValue) * 200}px` : '0px',
                   backgroundColor: item.color 
                 }}
               />
