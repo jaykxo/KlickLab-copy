@@ -118,7 +118,7 @@ const Test: React.FC = () => {
     const pollData = async () => {
       try {
         // 배포된 서버의 API 주소로 변경
-        const response = await fetch('http://localhost:3000/api/button-clicks');
+        const response = await fetch('http://13.125.232.111:3000/api/button-clicks');
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴
