@@ -21,9 +21,12 @@ app.post('/api/analytics/collect', async (req, res) => {
     const db = await connectMongo();
     const logs = db.collection('logs');
 
+    const utcDate = new Date(data.timestamp);
+    const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+
     await logs.insertOne({
       event_name: data.event_name,
-      timestamp: data.timestamp,
+      timestamp: kstDate.toISOString(),
       client_id: data.client_id,
       user_id: data.user_id,
       session_id: data.session_id,
@@ -65,19 +68,27 @@ app.post('/api/analytics/collect', async (req, res) => {
 
 app.get('/api/button-clicks', async (req, res) => {
   // const data = req.body;
+  const query = req.query;
+  // console.log(query);
   try {
     const db = await connectMongo();
     const logs = db.collection('logs');
 
-    const queries = await logs
-      .find({
-        $and: [
-          { event_name: "auto_click" },
-          { "properties.target_text": /^button [1-7]$/ },
-          { "properties.is_button": true }
-        ]
-      })
-      .toArray();
+    const andConditions = [
+      { event_name: "auto_click" },
+      { "properties.target_text": /^button [1-7]$/ },
+      { "properties.is_button": true },
+    ];
+    
+    const orConditions = [];
+    if (Object.keys(query).length > 0) {
+      // console.log(query.platform);
+      orConditions.push({ device_type: query.platform });
+      orConditions.push({ os: query.platform });
+      andConditions.push({ $or: orConditions });
+    }
+    // console.log(JSON.stringify(andConditions, null, 2));
+    const queries = await logs.find({ $and: andConditions }).toArray();
 
     let clicks = [0, 0, 0, 0, 0, 0, 0, 0];
     for (let i = 0; i < queries.length; i++) {
