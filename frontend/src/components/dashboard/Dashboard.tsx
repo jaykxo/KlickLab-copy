@@ -42,7 +42,7 @@ export const Dashboard: React.FC = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  const [mockDashboardData, setMockDashboardData] = useState<DataTypes | null>(null);
+  const [dashboardData, setdashboardData] = useState<DataTypes | null>(null);
   useEffect(() => {
     fetch("http://localhost:3000/api/analytics/getDashboardData", {
       method: "POST",
@@ -51,7 +51,7 @@ export const Dashboard: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log("받은 데이터:", data);
-        setMockDashboardData(data);
+        setdashboardData(data);
       })
       .catch((err) => {
         console.error("데이터 불러오기 실패:", err);
@@ -117,7 +117,7 @@ export const Dashboard: React.FC = () => {
                 <FilterTabs filters={filters} onFilterChange={handleFilterChange} />
               </div>
 
-              {mockDashboardData && (
+              {dashboardData && (
                 <>
                   {/* 통계 카드 */}
                   <div className="mb-8">
@@ -126,7 +126,7 @@ export const Dashboard: React.FC = () => {
                       <h2 className="text-lg font-semibold text-gray-900">주요 통계</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {mockDashboardData.stats.map((stat, index) => (
+                      {dashboardData.stats.map((stat, index) => (
                         <StatCard key={index} data={stat} />
                       ))}
                     </div>
@@ -138,7 +138,7 @@ export const Dashboard: React.FC = () => {
                       <TrendingUp className="w-5 h-5 text-gray-600" />
                       <h2 className="text-lg font-semibold text-gray-900">방문자 추이</h2>
                     </div>
-                    <VisitorChart data={mockDashboardData.visitorTrend} />
+                    <VisitorChart data={dashboardData.visitorTrend} />
                   </div>
 
                   {/* 기타 차트 */}
@@ -148,14 +148,14 @@ export const Dashboard: React.FC = () => {
                         <Clock className="w-5 h-5 text-gray-600" />
                         <h2 className="text-lg font-semibold text-gray-900">이탈 페이지 분석</h2>
                       </div>
-                      <ExitPageChart data={mockDashboardData.exitPages} />
+                      <ExitPageChart data={dashboardData.exitPages} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <Clock className="w-5 h-5 text-gray-600" />
                         <h2 className="text-lg font-semibold text-gray-900">페이지별 체류시간</h2>
                       </div>
-                      <PageTimeChart data={mockDashboardData.pageTimes} />
+                      <PageTimeChart data={dashboardData.pageTimes} />
                     </div>
                   </div>
                 </>

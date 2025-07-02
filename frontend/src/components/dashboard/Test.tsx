@@ -130,15 +130,15 @@ const Test: React.FC = () => {
     const pollData = async () => {
       try {
         // 필터에 따라 다른 API 엔드포인트 호출
-        let apiUrl = 'http://3.39.230.90:3000/api/button-clicks';
+        let apiUrl = 'http://localhost:3000/api/button-clicks'; // 3.39.230.90
         
         if (filters.mainCategory !== 'all') {
           if (filters.subCategory === 'all') {
             // 카테고리 전체 (모바일 전체, 데스크탑 전체)
-            apiUrl = `http://3.39.230.90:3000/api/button-clicks?platform=${filters.mainCategory}`;
+            apiUrl = `http://localhost:3000/api/button-clicks?platform=${filters.mainCategory}`;
           } else {
             // 특정 플랫폼
-            apiUrl = `http://3.39.230.90:3000/api/button-clicks?platform=${filters.subCategory}`;
+            apiUrl = `http://localhost:3000/api/button-clicks?platform=${filters.subCategory}`;
           }
         }
         

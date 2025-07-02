@@ -11,9 +11,12 @@ router.post("/collect", async (req, res) => {
     const db = await connectMongo();
     const logs = db.collection("logs");
 
+    const utcDate = new Date(data.timestamp);
+    const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+
     await logs.insertOne({
       event_name: data.event_name,
-      timestamp: data.timestamp,
+      timestamp: kstDate.toISOString(),
       client_id: data.client_id,
       user_id: data.user_id,
       session_id: data.session_id,
