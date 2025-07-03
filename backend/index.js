@@ -5,7 +5,8 @@ const path = require("path");
 const PORT = 3000;
 
 // const pool = require('./src/config/postgre');
-const connectMongo = require("./src/config/mongo");
+// const connectMongo = require("./src/config/mongo");
+const clickhouse = require("../src/config/clickhouse");
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(cors());
@@ -20,9 +21,11 @@ app.use('/api/analytics', analyticsRoutes);
 
 /* 데모용 테스트 API */
 app.get('/api/button-clicks', async (req, res) => {
-  // const data = req.body;
   const query = req.query;
-  // console.log(query);
+
+  const allowedPlatforms = ['desktop', 'mobile', 'Windows', 'macOS', 'iOS', 'Android'];
+  const safePlatform = allowedPlatforms.includes(platform) ? platform : null;
+  
   try {
     const db = await connectMongo();
     const logs = db.collection('logs');

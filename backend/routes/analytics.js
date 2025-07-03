@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-// const connectMongo = require("../src/config/mongo");
-// const redis = require("../src/config/redis");
 const { enqueueAnalytics } = require("../src/config/queue");
 const { getDashboardData } = require("../services/getDashboardData");
 
