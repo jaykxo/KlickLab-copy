@@ -1,6 +1,6 @@
 require("dotenv").config();
 const redis = require("./redis");
-// const AWS = require("aws-sdk");
+const AWS = require("aws-sdk");
 
 const isUsingRedis = process.env.QUEUE_TYPE !== "sqs"; // 실제 배포 시에는 false가 되어야 함
 
@@ -10,16 +10,12 @@ async function enqueueAnalytics(data) {
   if (isUsingRedis) {
     return redis.lpush("analytics_queue", payload);
   } else {
-    // TODO: SQS 환경 셋업(예: prod)
-    /*
     const sqs = new AWS.SQS({ region: "ap-northeast-2" });
     const params = {
       QueueUrl: process.env.SQS_QUEUE_URL,
       MessageBody: payload
     };
     return sqs.sendMessage(params).promise();
-    */
-    throw new Error("SQS enqueueAnalytics() not implemented yet.");
   }
 }
 
@@ -38,8 +34,6 @@ async function consumeAnalytics(callback) {
       }
     }
   } else {
-    // SQS long polling
-    /*
     const sqs = new AWS.SQS({ region: 'ap-northeast-2' });
     const QueueUrl = process.env.SQS_QUEUE_URL;
 
@@ -65,8 +59,6 @@ async function consumeAnalytics(callback) {
         console.error('[SQS] receiveMessage error:', e);
       }
     }
-    */
-    throw new Error("SQS consumeAnalytics() not implemented yet.");
   }
 }
 
