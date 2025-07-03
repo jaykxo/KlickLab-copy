@@ -127,18 +127,19 @@ const Test: React.FC = () => {
   // 외부 연결 시뮬레이션
   useEffect(() => {
     // 실제 API 연결 (배포된 버튼 페이지에서 데이터 수신)
+    const ENDPOINT = 'localhost'; // 3.39.230.90
     const pollData = async () => {
       try {
         // 필터에 따라 다른 API 엔드포인트 호출
-        let apiUrl = 'http://localhost:3000/api/button-clicks'; // 3.39.230.90
+        let apiUrl = `http://${ENDPOINT}:3000/api/button-clicks`;
         
         if (filters.mainCategory !== 'all') {
           if (filters.subCategory === 'all') {
             // 카테고리 전체 (모바일 전체, 데스크탑 전체)
-            apiUrl = `http://localhost:3000/api/button-clicks?platform=${filters.mainCategory}`;
+            apiUrl = `http://${ENDPOINT}:3000/api/button-clicks?platform=${filters.mainCategory}`;
           } else {
             // 특정 플랫폼
-            apiUrl = `http://localhost:3000/api/button-clicks?platform=${filters.subCategory}`;
+            apiUrl = `http://${ENDPOINT}:3000/api/button-clicks?platform=${filters.subCategory}`;
           }
         }
         
