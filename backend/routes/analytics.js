@@ -14,43 +14,81 @@ router.post("/collect", async (req, res) => {
     const utcDate = new Date(data.timestamp);
     const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
 
-    await logs.insertOne({
-      event_name: data.event_name,
+    const {
+      event_name,
+      client_id,
+      user_id,
+      session_id,
+      user_gender = null,
+      user_age = null,
+      properties = {},
+      context = {}
+    } = data;
+
+    const {
+      page_path,
+      page_title,
+      referrer,
+      time_on_page_seconds = null,
+      ...restProperties
+    } = properties;
+
+    const {
+      device = {},
+      traffic_source = {},
+      ...restContext
+    } = context;
+
+    const {
+      device_type = null,
+      os = null,
+      browser = null,
+      language = null,
+      ...restDevice
+    } = device;
+
+    const {
+      traffic_medium = null,
+      traffic_source: trafficSourceName = null,
+      campaign = null,
+      ...restTraffic
+    } = traffic_source;
+
+    const filteredContext = {
+      ...restContext,
+      ...(Object.keys(restDevice).length > 0 && { device: restDevice }),
+      ...(Object.keys(restTraffic).length > 0 && { traffic_source: restTraffic })
+    };
+
+    const entry = {
+      event_name,
       timestamp: kstDate.toISOString(),
-      client_id: data.client_id,
-      user_id: data.user_id,
-      session_id: data.session_id,
+      client_id,
+      user_id,
+      session_id,
 
-      // flatten properties
-      page_path: data.properties?.page_path ?? null,
-      page_title: data.properties?.page_title ?? null,
-      referrer: data.properties?.referrer ?? null,
+      page_path,
+      page_title,
+      referrer,
+      time_on_page_seconds,
 
-      // flatten device context
-      device_type: data.context?.device?.device_type ?? null,
-      os: data.context?.device?.os ?? null,
-      browser: data.context?.device?.browser ?? null,
-      language: data.context?.device?.language ?? null,
+      device_type,
+      os,
+      browser,
+      language,
 
-      // flatten geo context
-      timezone: data.context?.geo?.timezone ?? null,
+      traffic_medium,
+      traffic_source: trafficSourceName,
+      traffic_campaign: campaign,
 
-      // flatten traffic_source
-      traffic_medium:
-        data.context?.traffic_source?.traffic_medium ?? null,
-      traffic_source:
-        data.context?.traffic_source?.traffic_source ?? null,
-      traffic_campaign: data.context?.traffic_source?.campaign ?? null,
+      user_gender,
+      user_age,
 
-      // flatten user meta
-      user_gender: data.user_gender,
-      user_age: data.user_age,
+      ...(Object.keys(restProperties).length > 0 && { properties: restProperties }),
+      ...(Object.keys(filteredContext).length > 0 && { context: filteredContext })
+    };
 
-      // 원본도 같이 저장 (optional)
-      properties: data.properties,
-      context: data.context,
-    });
-
+    await logs.insertOne(entry);
     res.status(200).json({ status: "ok" });
   } catch (err) {
     console.error("MongoDB INSERT ERROR:", err);
