@@ -4,9 +4,7 @@ const app = express();
 const path = require("path");
 const PORT = 3000;
 
-// const pool = require('./src/config/postgre');
-// const connectMongo = require("./src/config/mongo");
-const clickhouse = require("../src/config/clickhouse");
+const clickhouse = require("./src/config/clickhouse");
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(cors());
@@ -23,49 +21,48 @@ app.use('/api/analytics', analyticsRoutes);
 app.get('/api/button-clicks', async (req, res) => {
   const query = req.query;
 
-  const allowedPlatforms = ['desktop', 'mobile', 'Windows', 'macOS', 'iOS', 'Android'];
-  const safePlatform = allowedPlatforms.includes(platform) ? platform : null;
-  
   try {
-    const db = await connectMongo();
-    const logs = db.collection('logs');
+    const where = [
+      `event_name = 'auto_click'`,
+      `is_button = 1`,
+      `target_text REGEXP '^button [1-7]$'`,
+      query.platform ? `(device_type = '${query.platform}' OR os = '${query.platform}')` : null
+    ].filter(Boolean).join(' AND ');
 
-    const andConditions = [
-      { event_name: "auto_click" },
-      { "properties.target_text": /^button [1-7]$/ },
-      { "properties.is_button": true },
-    ];
-    
-    const orConditions = [];
-    if (Object.keys(query).length > 0) {
-      orConditions.push({ device_type: query.platform });
-      orConditions.push({ os: query.platform });
-      andConditions.push({ $or: orConditions });
-    }
-    const queries = await logs.find({ $and: andConditions }).toArray();
+    const result = await clickhouse.query({
+      query: `
+        SELECT element_path, target_text
+        FROM logs
+        WHERE ${where}
+      `,
+      format: 'JSON',
+    });
+
+    const json = await result.json();
+    const { data } = json;
 
     let clicks = [0, 0, 0, 0, 0, 0, 0, 0];
-    for (let i = 0; i < queries.length; i++) {
-      const tmp = queries[i].properties.target_text;
+    for (let i = 0; i < data.length; i++) {
+      const tmp = data[i].target_text;
       clicks[Number(tmp.charAt(tmp.length - 1))]++;
     }
 
     const buttonClicks = Object.fromEntries(
       Array.from({ length: 7 }, (_, i) => {
-        const index = i + 1; // 1부터 시작
+        const index = i + 1;
         return [`button${index}`, clicks[index]];
       })
     );
 
-    const clickEvents = queries.map(q => ({
-      element_path: q.properties?.element_path ?? '',
-      target_text: q.properties?.target_text ?? '',
+    const clickEvents = data.map(q => ({
+      element_path: q.element_path ?? '',
+      target_text: q.target_text ?? '',
     }));
 
-    res.status(200).json({ buttonClicks: buttonClicks, clickEvents: clickEvents });
+    res.status(200).json({ buttonClicks, clickEvents });
   } catch (err) {
-    console.error('MongoDB FIND ERROR:', err);
-    res.status(500).json({ error: 'MongoDB find failed' });
+    console.error('ClickHouse SELECT ERROR:', err);
+    res.status(500).json({ error: 'ClickHouse query failed' });
   }
 });
 
