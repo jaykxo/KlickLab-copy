@@ -207,7 +207,7 @@ const Test: React.FC = () => {
     };
     
     // 0.1초마다 데이터 확인
-    const interval = setInterval(pollData, 100);
+    const interval = setInterval(pollData, 1000);
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
