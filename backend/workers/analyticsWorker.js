@@ -1,43 +1,44 @@
 const connectMongo = require("../src/config/mongo");
 const { transformToEntry } = require("../services/transformToEntry");
-const { dequeueAnalytics } = require("../src/config/queue");
+const { consumeAnalytics } = require("../src/config/queue");
 
 const BATCH_SIZE = 100;
-const POLL_INTERVAL_MS = 1000;
+const FLUSH_INTERVAL_MS = 1000;
 
-function startWorker() {
-  connectMongo()
-    .then((db) => {
-      const logs = db.collection("logs");
+let entries = [];
+let lastFlushTime = Date.now();
 
-      setInterval(async () => {
-        const entries = [];
+async function maybeFlush(logs) {
+  const now = Date.now();
+  const shouldFlush = entries.length >= BATCH_SIZE || now - lastFlushTime >= FLUSH_INTERVAL_MS;
 
-        for (let i = 0; i < BATCH_SIZE; i++) {
-          const data = await dequeueAnalytics();
-          if (!data) break;
+  if (shouldFlush && entries.length > 0) {
+    try {
+      await logs.insertMany(entries);
+      console.log(`Flushed ${entries.length} entries`);
+      entries = [];
+      lastFlushTime = now;
+    } catch (e) {
+      console.error("MongoDB insertMany ERROR:", e);
+    }
+  }
+}
 
-          try {
-            const entry = transformToEntry(data);
-            entries.push(entry);
-          } catch (e) {
-            console.error("transformToEntry failed:", e);
-          }
-        }
+async function startWorker() {
+  const db = await connectMongo();
+  const logs = db.collection("logs");
 
-        if (entries.length > 0) {
-          try {
-            await logs.insertMany(entries);
-            console.log(`Inserted ${entries.length} entries`);
-          } catch (e) {
-            console.error("MongoDB insertMany ERROR:", e);
-          }
-        }
-      }, POLL_INTERVAL_MS);
-    })
-    .catch((err) => {
-      console.error("MongoDB connection failed:", err);
-    });
+  setInterval(() => maybeFlush(logs), FLUSH_INTERVAL_MS);
+
+  await consumeAnalytics(async (data) => {
+    try {
+      const entry = transformToEntry(data);
+      entries.push(entry);
+      await maybeFlush(logs);
+    } catch (e) {
+      console.error("transformToEntry error:", e);
+    }
+  });
 }
 
 startWorker();

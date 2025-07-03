@@ -23,39 +23,51 @@ async function enqueueAnalytics(data) {
   }
 }
 
-async function dequeueAnalytics() {
+async function consumeAnalytics(callback) {
   if (isUsingRedis) {
-    const raw = await redis.rpop("analytics_queue");
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch (e) {
-      console.error("Redis 큐 JSON 파싱 오류:", e);
-      return null;
+    while (true) {
+      try {
+        const result = await redis.brpop('analytics_queue', 0);
+        const raw = result?.[1];
+        if (!raw) continue;
+
+        const data = JSON.parse(raw);
+        await callback(data);
+      } catch (e) {
+        console.error('[Redis] BRPOP error:', e);
+      }
     }
   } else {
-    // TODO: 실제 SQS receiveMessage 처리
+    // SQS long polling
     /*
-    const sqs = new AWS.SQS({ region: "ap-northeast-2" });
-    const params = {
-      QueueUrl: process.env.SQS_QUEUE_URL,
-      MaxNumberOfMessages: 1,
-      WaitTimeSeconds: 1
-    };
-    const result = await sqs.receiveMessage(params).promise();
-    const msg = result.Messages?.[0];
-    if (!msg) return null;
+    const sqs = new AWS.SQS({ region: 'ap-northeast-2' });
+    const QueueUrl = process.env.SQS_QUEUE_URL;
 
-    const data = JSON.parse(msg.Body);
-    await sqs.deleteMessage({
-      QueueUrl: process.env.SQS_QUEUE_URL,
-      ReceiptHandle: msg.ReceiptHandle
-    }).promise();
+    while (true) {
+      try {
+        const res = await sqs.receiveMessage({
+          QueueUrl,
+          MaxNumberOfMessages: 10,
+          WaitTimeSeconds: 10, // long poll
+        }).promise();
 
-    return data;
+        const messages = res.Messages || [];
+        for (const msg of messages) {
+          const data = JSON.parse(msg.Body);
+          await callback(data);
+
+          await sqs.deleteMessage({
+            QueueUrl,
+            ReceiptHandle: msg.ReceiptHandle,
+          }).promise();
+        }
+      } catch (e) {
+        console.error('[SQS] receiveMessage error:', e);
+      }
+    }
     */
-    throw new Error("SQS dequeueAnalytics() not implemented yet.");
+    throw new Error("SQS consumeAnalytics() not implemented yet.");
   }
 }
 
-module.exports = { enqueueAnalytics, dequeueAnalytics };
+module.exports = { enqueueAnalytics, consumeAnalytics };
