@@ -2,31 +2,30 @@ const clickhouse = require('../src/config/clickhouse');
 
 async function getDashboardData() {
   // 1) 날짜 계산 (KST 기준 자정)
-  const toKstMidnight = (date) => {
-    const d = new Date(date.getTime() + 9 * 60 * 60000);
-    d.setUTCHours(0, 0, 0, 0);
-    return d;
-  };
-  const todayKst = toKstMidnight(new Date());
-  const sevenDaysAgoKst = new Date(todayKst.getTime() - 6 * 86400000);
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const todayKst = new Date(now.getTime() + kstOffset);
+  todayKst.setHours(0, 0, 0, 0);
 
-  const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ');
-  const todayStr = fmt(todayKst);
-  const sevenDaysAgoStr = fmt(sevenDaysAgoKst);
+  const todayStr = new Date(todayKst.getTime() - kstOffset).toISOString().slice(0, 19).replace('T', ' ');
+
+  const sevenDaysAgoKst = new Date(todayKst);
+  sevenDaysAgoKst.setDate(sevenDaysAgoKst.getDate() - 6);
+  const sevenDaysAgoStr = new Date(sevenDaysAgoKst.getTime() - kstOffset).toISOString().slice(0, 19).replace('T', ' ');
 
   // 2) 일일 방문자 수
   const todayVisRes = await clickhouse.query({
     query: `
       SELECT countDistinct(client_id) AS cnt
       FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= parseDateTimeBestEffort('${todayStr}')
+      WHERE timestamp >= '${todayStr}'
     `,
     format: 'JSONEachRow'
   });
+
   let todayVisitorsCount = 0;
-  for await (const row of todayVisRes.stream()) {
-    todayVisitorsCount = row.cnt;
-  }
+  const [result] = await todayVisRes.json();
+  todayVisitorsCount = +result.cnt;
 
   // 3) 신규 사용자 수 (처음 기록된 user_id가 오늘 이후)
   const newUsersRes = await clickhouse.query({
@@ -37,14 +36,14 @@ async function getDashboardData() {
         FROM ${process.env.CLICKHOUSE_TABLE}
         GROUP BY user_id
       )
-      WHERE firstSeen >= parseDateTimeBestEffort('${todayStr}')
+      WHERE firstSeen >= '${todayStr}'
     `,
     format: 'JSONEachRow'
   });
+
   let newUsers = 0;
-  for await (const row of newUsersRes.stream()) {
-    newUsers = row.newUsers;
-  }
+  const [row] = await newUsersRes.json();
+  newUsers = +row.newUsers;
 
   // 4) 재방문자 수 = 오늘 방문자 - 신규 사용자
   const revisitCount = todayVisitorsCount - newUsers;
@@ -60,10 +59,7 @@ async function getDashboardData() {
     `,
     format: 'JSONEachRow'
   });
-  const devicesRaw = [];
-  for await (const row of devicesRes.stream()) {
-    devicesRaw.push(row);
-  }
+  const devicesRaw = await devicesRes.json();
   const totalDeviceUsers = devicesRaw.reduce((sum, d) => sum + d.users, 0);
   const devices = devicesRaw.map(d => ({
     device: d.device,
@@ -88,10 +84,7 @@ async function getDashboardData() {
     `,
     format: 'JSONEachRow'
   });
-  const exitRaw = [];
-  for await (const row of exitRes.stream()) {
-    exitRaw.push(row);
-  }
+  const exitRaw = await exitRes.json();
   const exitPages = exitRaw.map(e => ({
     page: e.page,
     exitCount: e.exitCount,
@@ -111,43 +104,51 @@ async function getDashboardData() {
     `,
     format: 'JSONEachRow'
   });
-  const pageTimes = [];
-  for await (const row of pageTimesRes.stream()) {
-    pageTimes.push({
-      page: row.page,
-      averageTime: +row.averageTime,
-      visitCount: row.visitCount
-    });
-  }
+  const pageTimesRaw = await pageTimesRes.json();
+  const pageTimes = pageTimesRaw.map(row => ({
+    page: row.page,
+    averageTime: +row.averageTime,
+    visitCount: row.visitCount
+  }));
 
   // 8) 최근 7일 방문자 추이
-  const trendRes = await clickhouse.query({
-    query: `
+  const trendRes = await clickhouse.query({ query: `SELECT
+    formatDateTime(timestamp, '%Y-%m-%d') AS date,
+    countDistinct(client_id) AS visitors,
+    countDistinctIf(client_id, isNew = 1) AS newVisitors,
+    countDistinctIf(client_id, isNew = 0) AS returningVisitors
+  FROM (
+    SELECT
+      client_id,
+      timestamp,
+      formatDateTime(timestamp, '%Y-%m-%d') AS current_date,
+      formatDateTime(min_timestamp, '%Y-%m-%d') AS first_date,
+      if(current_date = first_date, 1, 0) AS isNew
+    FROM (
       SELECT
-        formatDateTime(timestamp, '%Y-%m-%d') AS date,
-        countDistinct(client_id) AS visitors
+        client_id,
+        timestamp,
+        min(timestamp) OVER (PARTITION BY client_id) AS min_timestamp
       FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= parseDateTimeBestEffort('${sevenDaysAgoStr}')
-      GROUP BY date
-      ORDER BY date
-    `,
-    format: 'JSONEachRow'
-  });
-  const visitorTrendRaw = [];
-  for await (const row of trendRes.stream()) {
-    visitorTrendRaw.push(row);
-  }
-  // 누락된 날짜 보완, newVisitors 및 returningVisitors는 0으로
+      WHERE timestamp >= '${sevenDaysAgoStr}'
+    )
+  )
+  GROUP BY date
+  ORDER BY date
+  `, format: 'JSONEachRow' });
+  const visitorTrendRaw = await trendRes.json();
+
+  const baseDate = new Date(now);
   const visitorTrend = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(todayKst.getTime() - i * 86400000);
+    const d = new Date(baseDate.getTime() - i * 86400000);
     const dateStr = d.toISOString().split('T')[0];
     const found = visitorTrendRaw.find(v => v.date === dateStr);
     visitorTrend.push({
       date: dateStr,
-      visitors: found?.visitors || 0,
-      newVisitors: 0,
-      returningVisitors: 0
+      visitors: +found?.visitors || 0,
+      newVisitors: +found?.newVisitors || 0,
+      returningVisitors: +found?.returningVisitors || 0
     });
   }
 
