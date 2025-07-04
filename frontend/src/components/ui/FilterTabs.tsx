@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 // 타입 정의를 직접 포함
 interface FilterOptions {
-  period: 'today' | 'week' | 'month' | 'year';
+  period: '5min' | '1hour' | '1day' | '1week';
   gender: 'all' | 'male' | 'female';
   ageGroup: 'all' | '10s' | '20s' | '30s' | '40s' | '50s+';
 }
@@ -57,7 +57,7 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({ filters, onFilterChange 
             className={clsx(
               'px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 whitespace-nowrap',
               value === option.value
-                ? 'bg-primary-600 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             )}
           >
@@ -69,15 +69,15 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({ filters, onFilterChange 
   );
 
   return (
-    <div className="card">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">필터</h3>
+        <h3 className="text-lg font-semibold text-gray-900">실시간 필터</h3>
         <p className="text-sm text-gray-600">데이터를 원하는 조건으로 필터링하세요</p>
       </div>
       
       <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
         <FilterGroup
-          title="기간"
+          title="시간 범위"
           options={periodOptions}
           value={filters.period}
           onChange={(value) => onFilterChange('period', value)}
