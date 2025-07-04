@@ -1,42 +1,54 @@
 const clickhouse = require('../src/config/clickhouse');
 
 async function getDashboardData() {
-  const now = new Date();
-  const kstOffset = 9 * 60 * 60 * 1000;
-  const todayKst = new Date(now.getTime() + kstOffset);
-  todayKst.setHours(0, 0, 0, 0);
-  const todayStr = new Date(todayKst.getTime() - kstOffset).toISOString().slice(0, 19).replace('T', ' ');
+  const yesterdayRes = await clickhouse.query({
+    query: `
+      SELECT clicks, visitors
+      FROM daily_metrics
+      WHERE date = yesterday();
+    `,
+    format: 'JSONEachRow'
+  });
+  const [yesterday] = await yesterdayRes.json();
 
   // 1) 일일 방문자 수
   const visitorRes = await clickhouse.query({
     query: `
       SELECT countDistinct(client_id) AS visitors
-      FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= '${todayStr}'
+      FROM events
+      WHERE date(timestamp) >= today()
     `,
     format: 'JSONEachRow'
   });
   const [visitorRow] = await visitorRes.json();
   const visitors = +visitorRow.visitors || 0;
 
+  const visitorsRate = yesterday.visitors
+    ? +(((visitors - yesterday.visitors) / yesterday.visitors) * 100).toFixed(1)
+    : 0;
+
   // 2) 일일 클릭 수
   const clickCountRes = await clickhouse.query({
     query: `
       SELECT count() AS clicks
-      FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= '${todayStr}' AND event_name = 'auto_click'
+      FROM events
+      WHERE date(timestamp) >= today() AND event_name = 'auto_click'
     `,
     format: 'JSONEachRow'
   });
   const [clickCountRow] = await clickCountRes.json();
   const clicks = +clickCountRow.clicks || 0;
 
+  const clicksRate = yesterday.clicks
+    ? +(((clicks - yesterday.clicks) / yesterday.clicks) * 100).toFixed(1)
+    : 0;
+
   // 3) Top 5 클릭 요소
   const topClicksRes = await clickhouse.query({
     query: `
       SELECT target_text, count() AS cnt
-      FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= '${todayStr}' AND event_name = 'auto_click' AND target_text != ''
+      FROM events
+      WHERE date(timestamp) >= today() AND event_name = 'auto_click' AND target_text != ''
       GROUP BY target_text
       ORDER BY cnt DESC
       LIMIT 5
@@ -49,8 +61,8 @@ async function getDashboardData() {
   const trendRes = await clickhouse.query({
     query: `
       SELECT formatDateTime(timestamp, '%H:00') AS hour, count() AS cnt
-      FROM ${process.env.CLICKHOUSE_TABLE}
-      WHERE timestamp >= '${todayStr}' AND event_name = 'auto_click'
+      FROM events
+      WHERE date(timestamp) >= today() AND event_name = 'auto_click'
       GROUP BY hour
       ORDER BY hour
     `,
@@ -70,7 +82,9 @@ async function getDashboardData() {
 
   return {
     visitors,
+    visitorsRate,
     clicks,
+    clicksRate,
     topClicks,
     clickTrend,
     summary

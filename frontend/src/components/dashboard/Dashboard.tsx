@@ -11,7 +11,9 @@ import { BarChart3, Users, TrendingUp, Clock } from 'lucide-react';
 
 interface DashboardData {
   visitors: number;
+  visitorsRate: number;
   clicks: number;
+  clicksRate: number;
   topClicks: { target_text: string; cnt: number }[];
   clickTrend: { hour: string; cnt: number }[];
   summary: string;
@@ -48,10 +50,9 @@ export const Dashboard: React.FC = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  const endpoint = import.meta.env.VITE_ENDPOINT;
   const [dashboardData, setdashboardData] = useState<DashboardData | null>(null);
   useEffect(() => {
-    fetch(`${endpoint}/api/analytics/getDashboardData`, {
+    fetch(`/api/analytics/getDashboardData`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     })
@@ -125,7 +126,36 @@ export const Dashboard: React.FC = () => {
               
                   <div className="space-y-1">
                     <p>✅ <span className="font-medium">일일 방문자 수:</span> {dashboardData.visitors}</p>
+                    <p className="text-sm text-gray-600 ml-5">
+                      전일 대비{' '}
+                      {isNaN(dashboardData.visitorsRate)
+                        ? '데이터 없음'
+                        : dashboardData.visitorsRate === 0
+                        ? '변화 없음'
+                        : (
+                            <span className={dashboardData.visitorsRate > 0 ? 'text-green-500' : 'text-red-500'}>
+                              {dashboardData.visitorsRate > 0
+                                ? `▲${dashboardData.visitorsRate}% 증가`
+                                : `▼${Math.abs(dashboardData.visitorsRate)}% 감소`}
+                            </span>
+                          )}
+                    </p>
+
                     <p>✅ <span className="font-medium">일일 클릭 수:</span> {dashboardData.clicks}</p>
+                    <p className="text-sm text-gray-600 ml-5">
+                      전일 대비{' '}
+                      {isNaN(dashboardData.clicksRate)
+                        ? '데이터 없음'
+                        : dashboardData.clicksRate === 0
+                        ? '변화 없음'
+                        : (
+                            <span className={dashboardData.clicksRate > 0 ? 'text-green-500' : 'text-red-500'}>
+                              {dashboardData.clicksRate > 0
+                                ? `▲${dashboardData.clicksRate}% 증가`
+                                : `▼${Math.abs(dashboardData.clicksRate)}% 감소`}
+                            </span>
+                          )}
+                    </p>
                   </div>
               
                   <div>
