@@ -26,7 +26,7 @@ app.get('/api/button-clicks', async (req, res) => {
       `event_name = 'auto_click'`,
       `is_button = 1`,
       `target_text REGEXP '^button [1-7]$'`,
-      query.platform ? `(device_type = '${query.platform}' OR os = '${query.platform}')` : null
+      query.platform ? `(device_type = '${query.platform}' OR device_os = '${query.platform}')` : null
     ].filter(Boolean).join(' AND ');
 
     const result = await clickhouse.query({
