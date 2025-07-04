@@ -1,20 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { enqueueAnalytics } = require("../src/config/queue");
 const { getDashboardData } = require("../services/getDashboardData");
 
-/* SDK로부터 받은 데이터를 DB에 저장 */
-router.post("/collect", async (req, res) => {
-  const data = req.body;
-
-  try {
-    await enqueueAnalytics(data);
-    res.status(200).json({ status: "queued" });
-  } catch (err) {
-    console.error("Redis PUSH ERROR:", err);
-    res.status(500).json({ error: "Failed to queue message" });
-  }
-});
+// 더 이상 Express 서버는 클릭스트림 수집에 관여하지 않음
 
 router.post("/getDashboardData", async (req, res) => {
   try {
