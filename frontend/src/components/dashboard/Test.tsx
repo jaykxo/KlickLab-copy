@@ -101,6 +101,7 @@ const Test: React.FC = () => {
         
         console.log('API 호출:', apiUrl);
         const response = await fetch(apiUrl);
+
         const data = await response.json();
         
         // SDK 방식: 각 버튼의 클릭 데이터를 받아옴

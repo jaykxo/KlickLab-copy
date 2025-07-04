@@ -21,12 +21,12 @@ app.post('/api/analytics/collect', async (req, res) => {
     const db = await connectMongo();
     const logs = db.collection('logs');
 
-    const UstTime = new Date(data.timestamp);
-    const kstTime = UstTime.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); // UST → KST로 변경
+    const utcDate = new Date(data.timestamp);
+    const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
 
     await logs.insertOne({
       event_name: data.event_name,
-      timestamp: kstTime, // data.timestamp
+      timestamp: kstDate.toISOString(),
       client_id: data.client_id,
       user_id: data.user_id,
       session_id: data.session_id,
@@ -68,19 +68,27 @@ app.post('/api/analytics/collect', async (req, res) => {
 
 app.get('/api/button-clicks', async (req, res) => {
   // const data = req.body;
+  const query = req.query;
+  // console.log(query);
   try {
     const db = await connectMongo();
     const logs = db.collection('logs');
 
-    const queries = await logs
-      .find({
-        $and: [
-          { event_name: "auto_click" },
-          { "properties.target_text": /^button [1-7]$/ },
-          { "properties.is_button": true }
-        ]
-      })
-      .toArray();
+    const andConditions = [
+      { event_name: "auto_click" },
+      { "properties.target_text": /^button [1-7]$/ },
+      { "properties.is_button": true },
+    ];
+    
+    const orConditions = [];
+    if (Object.keys(query).length > 0) {
+      // console.log(query.platform);
+      orConditions.push({ device_type: query.platform });
+      orConditions.push({ os: query.platform });
+      andConditions.push({ $or: orConditions });
+    }
+    // console.log(JSON.stringify(andConditions, null, 2));
+    const queries = await logs.find({ $and: andConditions }).toArray();
 
     let clicks = [0, 0, 0, 0, 0, 0, 0, 0];
     for (let i = 0; i < queries.length; i++) {
@@ -104,6 +112,183 @@ app.get('/api/button-clicks', async (req, res) => {
   } catch (err) {
     console.error('MongoDB FIND ERROR:', err);
     res.status(500).json({ error: 'MongoDB find failed' });
+  }
+});
+
+// 오버뷰 탭 API들
+app.get('/api/stats/visitors', async (req, res) => {
+  try {
+    const db = await connectMongo();
+    const logs = db.collection('logs');
+    
+    const date = req.query.date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // 오늘 방문자 수 (유니크 userId)
+    const todayVisitors = await logs.distinct('user_id', {
+      timestamp: {
+        $gte: new Date(date + 'T00:00:00.000Z'),
+        $lt: new Date(date + 'T23:59:59.999Z')
+      },
+      event_name: 'auto_click'
+    });
+    
+    // 어제 방문자 수 (유니크 userId)
+    const yesterdayVisitors = await logs.distinct('user_id', {
+      timestamp: {
+        $gte: new Date(yesterdayStr + 'T00:00:00.000Z'),
+        $lt: new Date(yesterdayStr + 'T23:59:59.999Z')
+      },
+      event_name: 'auto_click'
+    });
+    
+    res.status(200).json({
+      today: todayVisitors.length,
+      yesterday: yesterdayVisitors.length
+    });
+  } catch (err) {
+    console.error('Visitors API ERROR:', err);
+    res.status(500).json({ error: 'Failed to get visitors data' });
+  }
+});
+
+app.get('/api/stats/clicks', async (req, res) => {
+  try {
+    const db = await connectMongo();
+    const logs = db.collection('logs');
+    
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // 오늘 클릭 수
+    const todayClicks = await logs.countDocuments({
+      timestamp: {
+        $gte: new Date(date + 'T00:00:00.000Z'),
+        $lt: new Date(date + 'T23:59:59.999Z')
+      },
+      event_name: 'auto_click'
+    });
+    
+    // 어제 클릭 수
+    const yesterdayClicks = await logs.countDocuments({
+      timestamp: {
+        $gte: new Date(yesterdayStr + 'T00:00:00.000Z'),
+        $lt: new Date(yesterdayStr + 'T23:59:59.999Z')
+      },
+      event_name: 'auto_click'
+    });
+    
+    res.status(200).json({
+      today: todayClicks,
+      yesterday: yesterdayClicks
+    });
+  } catch (err) {
+    console.error('Clicks API ERROR:', err);
+    res.status(500).json({ error: 'Failed to get clicks data' });
+  }
+});
+
+app.get('/api/stats/top-clicks', async (req, res) => {
+  try {
+    const db = await connectMongo();
+    const logs = db.collection('logs');
+    
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    
+    // Top 5 클릭 요소 집계
+    const topClicks = await logs.aggregate([
+      {
+        $match: {
+          timestamp: {
+            $gte: new Date(date + 'T00:00:00.000Z'),
+            $lt: new Date(date + 'T23:59:59.999Z')
+          },
+          event_name: 'auto_click'
+        }
+      },
+      {
+        $group: {
+          _id: '$properties.target_text',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        $project: {
+          label: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]).toArray();
+    
+    res.status(200).json({ items: topClicks });
+  } catch (err) {
+    console.error('Top Clicks API ERROR:', err);
+    res.status(500).json({ error: 'Failed to get top clicks data' });
+  }
+});
+
+app.get('/api/stats/click-trend', async (req, res) => {
+  try {
+    const db = await connectMongo();
+    const logs = db.collection('logs');
+    
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    
+    // 5분 단위 클릭 트렌드 집계
+    const clickTrend = await logs.aggregate([
+      {
+        $match: {
+          timestamp: {
+            $gte: new Date(date + 'T00:00:00.000Z'),
+            $lt: new Date(date + 'T23:59:59.999Z')
+          },
+          event_name: 'auto_click'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: '%H:%M',
+              date: {
+                $dateTrunc: {
+                  date: '$timestamp',
+                  unit: 'minute',
+                  binSize: 5
+                }
+              }
+            }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { '_id': 1 }
+      },
+      {
+        $project: {
+          time: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]).toArray();
+    
+    res.status(200).json({ data: clickTrend });
+  } catch (err) {
+    console.error('Click Trend API ERROR:', err);
+    res.status(500).json({ error: 'Failed to get click trend data' });
   }
 });
 
