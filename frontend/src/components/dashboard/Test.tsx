@@ -131,15 +131,15 @@ const Test: React.FC = () => {
       try {
         // 필터에 따라 다른 API 엔드포인트 호출
         const endpoint = import.meta.env.VITE_ENDPOINT;
-        let apiUrl = `http://${endpoint}:3000/api/button-clicks`;
+        let apiUrl = `${endpoint}/api/button-clicks`;
         
         if (filters.mainCategory !== 'all') {
           if (filters.subCategory === 'all') {
             // 카테고리 전체 (모바일 전체, 데스크탑 전체)
-            apiUrl = `http://${endpoint}:3000/api/button-clicks?platform=${filters.mainCategory}`;
+            apiUrl = `${endpoint}/api/button-clicks?platform=${filters.mainCategory}`;
           } else {
             // 특정 플랫폼
-            apiUrl = `http://${endpoint}:3000/api/button-clicks?platform=${filters.subCategory}`;
+            apiUrl = `${endpoint}/api/button-clicks?platform=${filters.subCategory}`;
           }
         }
         
@@ -185,7 +185,7 @@ const Test: React.FC = () => {
               }
             }
             
-            // target_text로도 확인 (button 1, button 2, ...)
+            // 또는 target_text로도 확인 (button 1, button 2, ...)
             // const textMatch = event.target_text?.match(/button (\d+)/);
             // if (textMatch) {
             //   const buttonNumber = parseInt(textMatch[1]);
@@ -207,8 +207,8 @@ const Test: React.FC = () => {
       }
     };
     
-    // 1초마다 데이터 확인
-    const interval = setInterval(pollData, 1000);
+    const pollingInterval = 500;
+    const interval = setInterval(pollData, pollingInterval);
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);

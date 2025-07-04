@@ -32,7 +32,7 @@ app.get('/api/button-clicks', async (req, res) => {
     const result = await clickhouse.query({
       query: `
         SELECT element_path, target_text
-        FROM logs
+        FROM ${process.env.CLICKHOUSE_TABLE}
         WHERE ${where}
       `,
       format: 'JSON',

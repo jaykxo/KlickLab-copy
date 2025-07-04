@@ -7,18 +7,18 @@ async function getDashboardData() {
     d.setUTCHours(0, 0, 0, 0);
     return d;
   };
-  const todayKst    = toKstMidnight(new Date());
+  const todayKst = toKstMidnight(new Date());
   const sevenDaysAgoKst = new Date(todayKst.getTime() - 6 * 86400000);
 
   const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ');
-  const todayStr       = fmt(todayKst);
+  const todayStr = fmt(todayKst);
   const sevenDaysAgoStr = fmt(sevenDaysAgoKst);
 
   // 2) 일일 방문자 수
   const todayVisRes = await clickhouse.query({
     query: `
       SELECT countDistinct(client_id) AS cnt
-      FROM logs
+      FROM ${process.env.CLICKHOUSE_TABLE}
       WHERE timestamp >= parseDateTimeBestEffort('${todayStr}')
     `,
     format: 'JSONEachRow'
@@ -34,7 +34,7 @@ async function getDashboardData() {
       SELECT count() AS newUsers
       FROM (
         SELECT user_id, min(timestamp) AS firstSeen
-        FROM logs
+        FROM ${process.env.CLICKHOUSE_TABLE}
         GROUP BY user_id
       )
       WHERE firstSeen >= parseDateTimeBestEffort('${todayStr}')
@@ -55,7 +55,7 @@ async function getDashboardData() {
       SELECT
         device_type AS device,
         countDistinct(client_id) AS users
-      FROM logs
+      FROM ${process.env.CLICKHOUSE_TABLE}
       GROUP BY device_type
     `,
     format: 'JSONEachRow'
@@ -81,7 +81,7 @@ async function getDashboardData() {
         SELECT
           client_id,
           argMax(page_path, timestamp) AS page
-        FROM logs
+        FROM ${process.env.CLICKHOUSE_TABLE}
         GROUP BY client_id
       )
       GROUP BY page
@@ -105,7 +105,7 @@ async function getDashboardData() {
         page_path AS page,
         avg(time_on_page_seconds) AS averageTime,
         count() AS visitCount
-      FROM logs
+      FROM ${process.env.CLICKHOUSE_TABLE}
       WHERE time_on_page_seconds IS NOT NULL
       GROUP BY page_path
     `,
@@ -115,7 +115,7 @@ async function getDashboardData() {
   for await (const row of pageTimesRes.stream()) {
     pageTimes.push({
       page: row.page,
-      averageTime: +row.averageTime.toFixed(1),
+      averageTime: +row.averageTime,
       visitCount: row.visitCount
     });
   }
@@ -126,7 +126,7 @@ async function getDashboardData() {
       SELECT
         formatDateTime(timestamp, '%Y-%m-%d') AS date,
         countDistinct(client_id) AS visitors
-      FROM logs
+      FROM ${process.env.CLICKHOUSE_TABLE}
       WHERE timestamp >= parseDateTimeBestEffort('${sevenDaysAgoStr}')
       GROUP BY date
       ORDER BY date

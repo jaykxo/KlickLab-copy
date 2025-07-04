@@ -45,7 +45,7 @@ export const Dashboard: React.FC = () => {
   const endpoint = import.meta.env.VITE_ENDPOINT;
   const [dashboardData, setdashboardData] = useState<DataTypes | null>(null);
   useEffect(() => {
-    fetch(`http://${endpoint}:3000/api/analytics/getDashboardData`, {
+    fetch(`${endpoint}/api/analytics/getDashboardData`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     })
