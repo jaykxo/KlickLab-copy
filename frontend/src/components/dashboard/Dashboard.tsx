@@ -42,10 +42,10 @@ export const Dashboard: React.FC = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  const endpoint = import.meta.env.VITE_ENDPOINT;
+  // const endpoint = import.meta.env.VITE_ENDPOINT; // 이 줄 주석 처리 또는 삭제
   const [dashboardData, setdashboardData] = useState<DataTypes | null>(null);
   useEffect(() => {
-    fetch(`${endpoint}/api/analytics/getDashboardData`, {
+    fetch('/api/analytics/getDashboardData', {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     })
