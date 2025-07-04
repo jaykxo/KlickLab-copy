@@ -6,11 +6,17 @@ import { FilterTabs } from './FilterTabs';
 import { ExitPageChart } from './ExitPageChart';
 import { PageTimeChart } from './PageTimeChart';
 import Test from './Test';
-// import { mockDashboardData } from '../../data/mockData';
 import type { DataTypes } from '../../data/types';
 import { BarChart3, Users, TrendingUp, Clock } from 'lucide-react';
 
-// 타입 정의를 직접 포함
+interface DashboardData {
+  visitors: number;
+  clicks: number;
+  topClicks: { target_text: string; cnt: number }[];
+  clickTrend: { hour: string; cnt: number }[];
+  summary: string;
+}
+
 interface FilterOptions {
   period: 'today' | 'week' | 'month' | 'year';
   gender: 'all' | 'male' | 'female';
@@ -43,7 +49,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const endpoint = import.meta.env.VITE_ENDPOINT;
-  const [dashboardData, setdashboardData] = useState<DataTypes | null>(null);
+  const [dashboardData, setdashboardData] = useState<DashboardData | null>(null);
   useEffect(() => {
     fetch(`${endpoint}/api/analytics/getDashboardData`, {
       method: "POST",
@@ -113,53 +119,42 @@ export const Dashboard: React.FC = () => {
           {/* 현재는 대시보드 탭만 구현 */}
           {activeTab === 'dashboard' && (
             <>
-              {/* 필터 */}
-              <div className="mb-8">
-                <FilterTabs filters={filters} onFilterChange={handleFilterChange} />
-              </div>
-
               {dashboardData && (
-                <>
-                  {/* 통계 카드 */}
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Users className="w-5 h-5 text-gray-600" />
-                      <h2 className="text-lg font-semibold text-gray-900">주요 통계</h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {dashboardData.stats.map((stat, index) => (
-                        <StatCard key={index} data={stat} />
+                <div className="max-w-2xl mx-auto mt-8 bg-white shadow-md rounded-xl p-6 space-y-6 border">
+                  <h2 className="text-xl font-semibold border-b pb-2">📊 대시보드 요약</h2>
+              
+                  <div className="space-y-1">
+                    <p>✅ <span className="font-medium">일일 방문자 수:</span> {dashboardData.visitors}</p>
+                    <p>✅ <span className="font-medium">일일 클릭 수:</span> {dashboardData.clicks}</p>
+                  </div>
+              
+                  <div>
+                    <h3 className="text-lg font-semibold mt-4">🔥 Top 5 클릭 요소</h3>
+                    <ul className="list-decimal list-inside">
+                      {dashboardData.topClicks.map((item, i) => (
+                        <li key={i}>
+                          <span className="text-gray-800">'{item.target_text}'</span> — {item.cnt}회
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
-
-                  {/* 방문자 추이 */}
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <TrendingUp className="w-5 h-5 text-gray-600" />
-                      <h2 className="text-lg font-semibold text-gray-900">방문자 추이</h2>
-                    </div>
-                    <VisitorChart data={dashboardData.visitorTrend} />
+              
+                  <div>
+                    <h3 className="text-lg font-semibold mt-4">⏰ 시간대별 클릭 수</h3>
+                    <ul className="space-y-1">
+                      {dashboardData.clickTrend.map((item, i) => (
+                        <li key={i}>
+                          <span className="inline-block w-16 font-mono">{item.hour}</span> → {item.cnt}회
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-
-                  {/* 기타 차트 */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Clock className="w-5 h-5 text-gray-600" />
-                        <h2 className="text-lg font-semibold text-gray-900">이탈 페이지 분석</h2>
-                      </div>
-                      <ExitPageChart data={dashboardData.exitPages} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Clock className="w-5 h-5 text-gray-600" />
-                        <h2 className="text-lg font-semibold text-gray-900">페이지별 체류시간</h2>
-                      </div>
-                      <PageTimeChart data={dashboardData.pageTimes} />
-                    </div>
+              
+                  <div>
+                    <h3 className="text-lg font-semibold mt-4">📝 요약</h3>
+                    <p className="bg-gray-100 rounded p-3 text-sm text-gray-700">{dashboardData.summary}</p>
                   </div>
-                </>
+                </div>
               )}
             </>
           )}
