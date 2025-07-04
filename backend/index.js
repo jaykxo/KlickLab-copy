@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -33,7 +32,7 @@ app.get('/api/button-clicks', async (req, res) => {
     const result = await clickhouse.query({
       query: `
         SELECT element_path, target_text
-        FROM ${process.env.CLICKHOUSE_TABLE}
+        FROM events
         WHERE ${where}
       `,
       format: 'JSON',
