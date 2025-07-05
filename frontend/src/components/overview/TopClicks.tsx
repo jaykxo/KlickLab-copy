@@ -75,7 +75,7 @@ export const TopClicks: React.FC = () => {
               <div className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-white to-gray-50 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 cursor-pointer">
                 <div className={`flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full transition-all duration-300 ${
                   isTop 
-                    ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-sm' 
+                    ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-sm' 
                     : 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700'
                 }`}>
                   {index + 1}
@@ -95,18 +95,18 @@ export const TopClicks: React.FC = () => {
                     <div
                       className={`h-2 rounded-full transition-all duration-500 ease-out ${
                         isTop 
-                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 shadow-sm' 
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-sm' 
                           : 'bg-gradient-to-r from-blue-500 to-blue-600'
                       }`}
                       style={{ 
                         width: `${percentage}%`,
-                        boxShadow: isTop ? '0 1px 4px rgba(251, 191, 36, 0.3)' : 'none'
+                        boxShadow: isTop ? '0 1px 4px rgba(34, 197, 94, 0.3)' : 'none'
                       }}
                     />
                     <div
                       className={`absolute inset-0 rounded-full transition-all duration-500 ${
                         isTop 
-                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 opacity-20 blur-sm' 
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 opacity-20 blur-sm' 
                           : 'bg-gradient-to-r from-blue-500 to-blue-600 opacity-10 blur-sm'
                       }`}
                       style={{ width: `${percentage}%` }}
