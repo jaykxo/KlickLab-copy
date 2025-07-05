@@ -44,6 +44,7 @@ interface ClickRankingData {
   rank: number;
 }
 
+// 확장 가능한 대시보드 데이터 인터페이스
 interface DashboardData {
   stats: StatCardData[];
   visitorTrend: VisitorData[];
@@ -51,6 +52,13 @@ interface DashboardData {
   pageTimes: PageTimeData[];
   devices: DeviceData[];
   clickRanking: ClickRankingData[];
+  // 팀원들이 추가할 수 있는 확장 필드들
+  userSegments?: any[];
+  behaviorAnalytics?: any[];
+  conversionFunnel?: any[];
+  performanceMetrics?: any[];
+  customReports?: any[];
+  [key: string]: any; // 동적 필드 허용
 }
 
 // 통계 카드 더미 데이터
@@ -228,11 +236,119 @@ const clickRankingData: ClickRankingData[] = [
   }
 ];
 
+// ===== 팀원들이 추가할 수 있는 확장 데이터 영역 =====
+
+// 사용자 세그먼트 데이터 (팀원 A용)
+const userSegmentData = [
+  { type: '신규 유저', value: 892 },
+  { type: '기존 유저', value: 355 }
+];
+
+// OS 분포 데이터 (팀원 B용)
+const osDistributionData = [
+  { os: 'Android', users: 743, category: 'mobile' },
+  { os: 'iOS', users: 504, category: 'mobile' },
+  { os: 'Windows', users: 620, category: 'desktop' },
+  { os: 'macOS', users: 210, category: 'desktop' },
+  { os: 'Linux', users: 85, category: 'desktop' }
+];
+
+// 브라우저 분포 데이터 (팀원 C용)
+const browserDistributionData = [
+  { browser: 'Chrome', users: 900, category: 'desktop' },
+  { browser: 'Edge', users: 180, category: 'desktop' },
+  { browser: 'Firefox', users: 110, category: 'desktop' },
+  { browser: 'Safari', users: 120, category: 'desktop' },
+  { browser: 'Chrome Mobile', users: 200, category: 'mobile' },
+  { browser: 'Safari Mobile', users: 300, category: 'mobile' },
+  { browser: 'Samsung Internet', users: 90, category: 'mobile' },
+  { browser: '기타', users: 62, category: 'mobile' }
+];
+
+// 사용자 행동 분석 데이터 (팀원 D용)
+const userBehaviorData = [
+  { behavior: '페이지 스크롤', count: 2345, percentage: 45.2 },
+  { behavior: '마우스 호버', count: 1890, percentage: 36.4 },
+  { behavior: '검색 사용', count: 1234, percentage: 23.8 },
+  { behavior: '필터 적용', count: 890, percentage: 17.2 },
+  { behavior: '북마크', count: 567, percentage: 10.9 }
+];
+
+// 전환 퍼널 데이터 (팀원 E용)
+const conversionFunnelData = [
+  { stage: '방문', count: 1247, conversionRate: 100 },
+  { stage: '상품 조회', count: 892, conversionRate: 71.5 },
+  { stage: '장바구니 추가', count: 456, conversionRate: 36.6 },
+  { stage: '결제 시작', count: 234, conversionRate: 18.8 },
+  { stage: '결제 완료', count: 123, conversionRate: 9.9 }
+];
+
+// 성능 메트릭 데이터 (팀원 F용)
+const performanceMetricsData = [
+  { metric: '페이지 로드 시간', value: 2.3, unit: '초', target: 3.0 },
+  { metric: 'TTFB', value: 180, unit: 'ms', target: 200 },
+  { metric: 'FCP', value: 1.2, unit: '초', target: 1.5 },
+  { metric: 'LCP', value: 2.8, unit: '초', target: 2.5 },
+  { metric: 'CLS', value: 0.08, unit: '', target: 0.1 }
+];
+
+// 지역별 데이터 (팀원 G용)
+const regionalData = [
+  { region: '서울', users: 456, percentage: 36.6 },
+  { region: '경기', users: 234, percentage: 18.8 },
+  { region: '부산', users: 123, percentage: 9.9 },
+  { region: '대구', users: 89, percentage: 7.1 },
+  { region: '인천', users: 78, percentage: 6.3 },
+  { region: '기타', users: 267, percentage: 21.4 }
+];
+
+// 시간대별 데이터 (팀원 H용)
+const timeBasedData = [
+  { hour: '09:00', activity: 234 },
+  { hour: '10:00', activity: 345 },
+  { hour: '11:00', activity: 456 },
+  { hour: '12:00', activity: 567 },
+  { hour: '13:00', activity: 678 },
+  { hour: '14:00', activity: 789 },
+  { hour: '15:00', activity: 890 },
+  { hour: '16:00', activity: 756 },
+  { hour: '17:00', activity: 654 },
+  { hour: '18:00', activity: 543 },
+  { hour: '19:00', activity: 432 },
+  { hour: '20:00', activity: 321 }
+];
+
+// ===== 메인 대시보드 데이터 =====
 export const mockDashboardData: DashboardData = {
   stats: statsData,
   visitorTrend: visitorTrendData,
   exitPages: exitPageData,
   pageTimes: pageTimeData,
   devices: deviceData,
-  clickRanking: clickRankingData
+  clickRanking: clickRankingData,
+  // 확장 데이터들 (팀원들이 필요시 사용)
+  userSegments: userSegmentData,
+  osDistribution: osDistributionData,
+  browserDistribution: browserDistributionData,
+  userBehavior: userBehaviorData,
+  conversionFunnel: conversionFunnelData,
+  performanceMetrics: performanceMetricsData,
+  regionalData: regionalData,
+  timeBasedData: timeBasedData
+};
+
+// ===== 개별 데이터 export (팀원들이 필요시 사용) =====
+export { userSegmentData, osDistributionData, browserDistributionData };
+export { userBehaviorData, conversionFunnelData, performanceMetricsData };
+export { regionalData, timeBasedData };
+
+// ===== 타입 export (팀원들이 필요시 사용) =====
+export type {
+  StatCardData,
+  VisitorData,
+  ExitPageData,
+  PageTimeData,
+  DeviceData,
+  ClickRankingData,
+  DashboardData
 }; 
