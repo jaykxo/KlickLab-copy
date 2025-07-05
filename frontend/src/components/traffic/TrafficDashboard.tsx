@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { VisitorChart } from './VisitorChart';
+import { TopPageFromMainPage } from './TopPageFromMainPage';
 import { TrendingUp, Globe, Clock } from 'lucide-react';
 import { mockDashboardData } from '../../data/mockData';
 
@@ -74,30 +75,33 @@ export const TrafficDashboard: React.FC = () => {
         <VisitorChart data={mockDashboardData.visitorTrend} />
       </div>
 
-      {/* 향후 구현 예정 컴포넌트들 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 유입 채널 분포 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">유입 채널 분포</h3>
+              {/* 향후 구현 예정 컴포넌트들 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* 유입 채널 분포 */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">유입 채널 분포</h3>
+            </div>
+            <div className="flex items-center justify-center h-32 text-gray-500">
+              개발 중...
+            </div>
           </div>
-          <div className="flex items-center justify-center h-32 text-gray-500">
-            개발 중...
+
+          {/* 시간대별 유입 분포 */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">시간대별 유입 분포</h3>
+            </div>
+            <div className="flex items-center justify-center h-32 text-gray-500">
+              개발 중...
+            </div>
           </div>
         </div>
 
-        {/* 시간대별 유입 분포 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">시간대별 유입 분포</h3>
-          </div>
-          <div className="flex items-center justify-center h-32 text-gray-500">
-            개발 중...
-          </div>
-        </div>
+        {/* 메인 페이지에서 이동하는 페이지 Top */}
+        <TopPageFromMainPage />
       </div>
-    </div>
-  );
-}; 
+    );
+  }; 
