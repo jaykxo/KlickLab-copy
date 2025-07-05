@@ -18,8 +18,8 @@ export const ClickTrend: React.FC = () => {
   useEffect(() => {
     const fetchClickTrend = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:3000/api/stats/click-trend?date=${today}`);
+        // const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`/api/stats/click-trend`);
         const result: ClickTrendData = await response.json();
         setData(result.data || []);
       } catch (error) {
