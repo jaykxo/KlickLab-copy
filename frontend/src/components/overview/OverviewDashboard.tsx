@@ -26,8 +26,8 @@ export const OverviewDashboard: React.FC = () => {
         
         // 방문자 수와 클릭 수 데이터를 동시에 가져오기
         const [visitorsResponse, clicksResponse] = await Promise.all([
-          fetch(`http://localhost:3000/api/stats/visitors`),
-          fetch(`http://localhost:3000/api/stats/clicks`)
+          fetch(`/api/stats/visitors`),
+          fetch(`/api/stats/clicks`)
         ]);
         
         const visitors = await visitorsResponse.json();

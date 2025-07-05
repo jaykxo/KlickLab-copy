@@ -19,7 +19,7 @@ export const TopClicks: React.FC = () => {
     const fetchTopClicks = async () => {
       try {
         // const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:3000/api/stats/top-clicks`);
+        const response = await fetch(`/api/stats/top-clicks`);
         const result: TopClicksData = await response.json();
         setData(result.items || []);
       } catch (error) {

@@ -32,7 +32,7 @@ export const ClickTrend: React.FC<ClickTrendProps> = ({ period = 60, step = 5 })
     const fetchClickTrend = async () => {
       try {
         // period, step을 쿼리로 넘길 수 있도록
-        const response = await fetch(`http://localhost:3000/api/stats/click-trend?period=${period}&step=${step}`);
+        const response = await fetch(`/api/stats/click-trend?period=${period}&step=${step}`);
         const result: ClickTrendData = await response.json();
         setData(result.data || []);
       } catch (error) {
