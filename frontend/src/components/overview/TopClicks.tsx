@@ -18,8 +18,8 @@ export const TopClicks: React.FC = () => {
   useEffect(() => {
     const fetchTopClicks = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:3000/api/stats/top-clicks?date=${today}`);
+        // const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`http://localhost:3000/api/stats/top-clicks`);
         const result: TopClicksData = await response.json();
         setData(result.items || []);
       } catch (error) {

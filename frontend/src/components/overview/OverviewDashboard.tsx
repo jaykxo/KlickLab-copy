@@ -22,12 +22,12 @@ export const OverviewDashboard: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        // const today = new Date().toISOString().split('T')[0];
         
         // 방문자 수와 클릭 수 데이터를 동시에 가져오기
         const [visitorsResponse, clicksResponse] = await Promise.all([
-          fetch(`http://localhost:3000/api/stats/visitors?date=${today}`),
-          fetch(`http://localhost:3000/api/stats/clicks?date=${today}`)
+          fetch(`http://localhost:3000/api/stats/visitors`),
+          fetch(`http://localhost:3000/api/stats/clicks`)
         ]);
         
         const visitors = await visitorsResponse.json();
