@@ -33,12 +33,24 @@ interface DeviceData {
   percentage: number;
 }
 
+interface ClickRankingData {
+  id: string;
+  name: string;
+  type: 'button' | 'link' | 'menu' | 'card' | 'banner';
+  clicks: number;
+  uniqueClicks: number;
+  clickRate: number; // 클릭률 (%)
+  avgTimeToClick: number; // 평균 클릭까지 걸린 시간 (초)
+  rank: number;
+}
+
 interface DashboardData {
   stats: StatCardData[];
   visitorTrend: VisitorData[];
   exitPages: ExitPageData[];
   pageTimes: PageTimeData[];
   devices: DeviceData[];
+  clickRanking: ClickRankingData[];
 }
 
 // 통계 카드 더미 데이터
@@ -132,10 +144,95 @@ const deviceData: DeviceData[] = [
   { device: 'iOS', users: 504, percentage: 40.4 }
 ];
 
+// 메인 페이지 클릭 랭킹 더미 데이터
+const clickRankingData: ClickRankingData[] = [
+  {
+    id: '1',
+    name: '상품 보기 버튼',
+    type: 'button',
+    clicks: 1247,
+    uniqueClicks: 892,
+    clickRate: 85.2,
+    avgTimeToClick: 3.2,
+    rank: 1
+  },
+  {
+    id: '2',
+    name: '장바구니 추가',
+    type: 'button',
+    clicks: 892,
+    uniqueClicks: 743,
+    clickRate: 72.1,
+    avgTimeToClick: 4.8,
+    rank: 2
+  },
+  {
+    id: '3',
+    name: '상품 상세 링크',
+    type: 'link',
+    clicks: 743,
+    uniqueClicks: 456,
+    clickRate: 68.7,
+    avgTimeToClick: 6.5,
+    rank: 3
+  },
+  {
+    id: '4',
+    name: '로그인 메뉴',
+    type: 'menu',
+    clicks: 456,
+    uniqueClicks: 234,
+    clickRate: 45.3,
+    avgTimeToClick: 2.1,
+    rank: 4
+  },
+  {
+    id: '5',
+    name: '프로모션 배너',
+    type: 'banner',
+    clicks: 234,
+    uniqueClicks: 189,
+    clickRate: 42.8,
+    avgTimeToClick: 4.3,
+    rank: 5
+  },
+  {
+    id: '6',
+    name: '상품 카드',
+    type: 'card',
+    clicks: 189,
+    uniqueClicks: 156,
+    clickRate: 38.9,
+    avgTimeToClick: 5.7,
+    rank: 6
+  },
+  {
+    id: '7',
+    name: '검색 버튼',
+    type: 'button',
+    clicks: 156,
+    uniqueClicks: 123,
+    clickRate: 28.5,
+    avgTimeToClick: 1.8,
+    rank: 7
+  },
+  {
+    id: '8',
+    name: '회원가입 링크',
+    type: 'link',
+    clicks: 123,
+    uniqueClicks: 98,
+    clickRate: 22.3,
+    avgTimeToClick: 2.4,
+    rank: 8
+  }
+];
+
 export const mockDashboardData: DashboardData = {
   stats: statsData,
   visitorTrend: visitorTrendData,
   exitPages: exitPageData,
   pageTimes: pageTimeData,
-  devices: deviceData
+  devices: deviceData,
+  clickRanking: clickRankingData
 }; 
