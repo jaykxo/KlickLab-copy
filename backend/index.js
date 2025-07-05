@@ -14,8 +14,12 @@ app.use(cors({
 }));
 
 /* analytics 라우팅 */
-const analyticsRoutes = require('./routes/analytics');
-app.use('/api/analytics', analyticsRoutes);
+// const analyticsRoutes = require('./routes/analytics');
+// app.use('/api/analytics', analyticsRoutes);
+
+/* stats 라우팅 */
+const statsRoutes = require('./routes/stats');
+app.use('/api/stats', statsRoutes);
 
 /* 데모용 테스트 API */
 app.get('/api/button-clicks', async (req, res) => {
@@ -66,7 +70,7 @@ app.get('/api/button-clicks', async (req, res) => {
   }
 });
 
-/* ▼ 수정해야함 */
+/*
 // 오버뷰 탭 API들
 app.get('/api/stats/visitors', async (req, res) => {
   try {
@@ -243,7 +247,7 @@ app.get('/api/stats/click-trend', async (req, res) => {
     res.status(500).json({ error: 'Failed to get click trend data' });
   }
 });
-/* ▲ 수정해야 함 */
+*/
 
 app.listen(PORT, () => {
   console.log(`KlickLab 서버 실행 중: http://localhost:${PORT}`);
