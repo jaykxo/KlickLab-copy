@@ -66,6 +66,7 @@ app.get('/api/button-clicks', async (req, res) => {
   }
 });
 
+/* ▼ 수정해야함 */
 // 오버뷰 탭 API들
 app.get('/api/stats/visitors', async (req, res) => {
   try {
@@ -242,6 +243,7 @@ app.get('/api/stats/click-trend', async (req, res) => {
     res.status(500).json({ error: 'Failed to get click trend data' });
   }
 });
+/* ▲ 수정해야 함 */
 
 app.listen(PORT, () => {
   console.log(`KlickLab 서버 실행 중: http://localhost:${PORT}`);
