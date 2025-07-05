@@ -14,193 +14,133 @@ interface PageClickData {
 
 interface TopPageFromMainPageProps {
   data?: PageClickData[];
+  filters?: {
+    period: string;
+    gender: string;
+    ageGroup: string;
+  };
 }
 
-export const TopPageFromMainPage: React.FC<TopPageFromMainPageProps> = ({ data }) => {
+export const TopPageFromMainPage: React.FC<TopPageFromMainPageProps> = ({ data, filters }) => {
   const [clickData, setClickData] = useState<PageClickData[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    const fetchPageClicks = async () => {
-      try {
-        // API 호출 (실제 구현 시)
-        // const response = await fetch(`http://localhost:3000/api/stats/main-page-navigation`);
-        // const result = await response.json();
-        // setClickData(result.items || []);
-        
-        // Mock data 사용
-        const mockData: PageClickData[] = [
-          {
-            id: '1',
-            name: '상품 목록 페이지',
-            page: '/products',
-            clicks: 1247,
-            uniqueClicks: 892,
-            clickRate: 85.2,
-            avgTimeToClick: 3.2,
-            rank: 1
-          },
-          {
-            id: '2',
-            name: '장바구니 페이지',
-            page: '/cart',
-            clicks: 892,
-            uniqueClicks: 743,
-            clickRate: 72.1,
-            avgTimeToClick: 4.8,
-            rank: 2
-          },
-          {
-            id: '3',
-            name: '상품 상세 페이지',
-            page: '/product-detail',
-            clicks: 743,
-            uniqueClicks: 456,
-            clickRate: 68.7,
-            avgTimeToClick: 6.5,
-            rank: 3
-          },
-          {
-            id: '4',
-            name: '로그인 페이지',
-            page: '/login',
-            clicks: 456,
-            uniqueClicks: 234,
-            clickRate: 45.3,
-            avgTimeToClick: 2.1,
-            rank: 4
-          },
-          {
-            id: '5',
-            name: '회원가입 페이지',
-            page: '/register',
-            clicks: 234,
-            uniqueClicks: 189,
-            clickRate: 42.8,
-            avgTimeToClick: 4.3,
-            rank: 5
-          },
-          {
-            id: '6',
-            name: '마이페이지',
-            page: '/mypage',
-            clicks: 189,
-            uniqueClicks: 156,
-            clickRate: 38.9,
-            avgTimeToClick: 5.7,
-            rank: 6
-          },
-          {
-            id: '7',
-            name: '검색 결과 페이지',
-            page: '/search',
-            clicks: 156,
-            uniqueClicks: 123,
-            clickRate: 28.5,
-            avgTimeToClick: 1.8,
-            rank: 7
-          },
-          {
-            id: '8',
-            name: '고객센터 페이지',
-            page: '/support',
-            clicks: 123,
-            uniqueClicks: 98,
-            clickRate: 22.3,
-            avgTimeToClick: 2.4,
-            rank: 8
-          },
-          {
-            id: '9',
-            name: '이벤트 페이지',
-            page: '/events',
-            clicks: 98,
-            uniqueClicks: 76,
-            clickRate: 18.7,
-            avgTimeToClick: 3.1,
-            rank: 9
-          },
-          {
-            id: '10',
-            name: '공지사항 페이지',
-            page: '/notice',
-            clicks: 76,
-            uniqueClicks: 54,
-            clickRate: 15.2,
-            avgTimeToClick: 2.8,
-            rank: 10
-          }
-        ];
-        
-        setClickData(mockData);
-      } catch (error) {
-        console.error('Failed to fetch page clicks:', error);
-        // Fallback data
-        setClickData([
-          {
-            id: '1',
-            name: '상품 목록',
-            page: '/products',
-            clicks: 1203,
-            uniqueClicks: 892,
-            clickRate: 85.2,
-            avgTimeToClick: 3.2,
-            rank: 1
-          },
-          {
-            id: '2',
-            name: '장바구니',
-            page: '/cart',
-            clicks: 987,
-            uniqueClicks: 743,
-            clickRate: 72.1,
-            avgTimeToClick: 4.8,
-            rank: 2
-          },
-          {
-            id: '3',
-            name: '로그인',
-            page: '/login',
-            clicks: 756,
-            uniqueClicks: 456,
-            clickRate: 68.7,
-            avgTimeToClick: 6.5,
-            rank: 3
-          },
-          {
-            id: '4',
-            name: '검색 결과',
-            page: '/search',
-            clicks: 543,
-            uniqueClicks: 234,
-            clickRate: 45.3,
-            avgTimeToClick: 2.1,
-            rank: 4
-          },
-          {
-            id: '5',
-            name: '상품 상세',
-            page: '/product-detail',
-            clicks: 432,
-            uniqueClicks: 189,
-            clickRate: 42.8,
-            avgTimeToClick: 4.3,
-            rank: 5
-          }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPageClicks();
-    
-    // 10초마다 데이터 갱신
-    const interval = setInterval(fetchPageClicks, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    if (data) {
+      // props로 받은 데이터 사용
+      setClickData(data);
+      setLoading(false);
+    } else {
+      // Fallback: Mock data 사용
+      const mockData: PageClickData[] = [
+        {
+          id: '1',
+          name: '상품 목록 페이지',
+          page: '/products',
+          clicks: 1247,
+          uniqueClicks: 892,
+          clickRate: 85.2,
+          avgTimeToClick: 3.2,
+          rank: 1
+        },
+        {
+          id: '2',
+          name: '장바구니 페이지',
+          page: '/cart',
+          clicks: 892,
+          uniqueClicks: 743,
+          clickRate: 72.1,
+          avgTimeToClick: 4.8,
+          rank: 2
+        },
+        {
+          id: '3',
+          name: '상품 상세 페이지',
+          page: '/product-detail',
+          clicks: 743,
+          uniqueClicks: 456,
+          clickRate: 68.7,
+          avgTimeToClick: 6.5,
+          rank: 3
+        },
+        {
+          id: '4',
+          name: '로그인 페이지',
+          page: '/login',
+          clicks: 456,
+          uniqueClicks: 234,
+          clickRate: 45.3,
+          avgTimeToClick: 2.1,
+          rank: 4
+        },
+        {
+          id: '5',
+          name: '회원가입 페이지',
+          page: '/register',
+          clicks: 234,
+          uniqueClicks: 189,
+          clickRate: 42.8,
+          avgTimeToClick: 4.3,
+          rank: 5
+        },
+        {
+          id: '6',
+          name: '마이페이지',
+          page: '/mypage',
+          clicks: 189,
+          uniqueClicks: 156,
+          clickRate: 38.9,
+          avgTimeToClick: 5.7,
+          rank: 6
+        },
+        {
+          id: '7',
+          name: '검색 결과 페이지',
+          page: '/search',
+          clicks: 156,
+          uniqueClicks: 123,
+          clickRate: 28.5,
+          avgTimeToClick: 1.8,
+          rank: 7
+        },
+        {
+          id: '8',
+          name: '고객센터 페이지',
+          page: '/support',
+          clicks: 123,
+          uniqueClicks: 98,
+          clickRate: 22.3,
+          avgTimeToClick: 2.4,
+          rank: 8
+        },
+        {
+          id: '9',
+          name: '이벤트 페이지',
+          page: '/events',
+          clicks: 98,
+          uniqueClicks: 76,
+          clickRate: 18.7,
+          avgTimeToClick: 3.1,
+          rank: 9
+        },
+        {
+          id: '10',
+          name: '공지사항 페이지',
+          page: '/notice',
+          clicks: 76,
+          uniqueClicks: 54,
+          clickRate: 15.2,
+          avgTimeToClick: 2.8,
+          rank: 10
+        }
+      ];
+      
+      setClickData(mockData);
+      setLoading(false);
+    }
+  }, [data]);
 
   if (loading) {
     return (
@@ -213,13 +153,46 @@ export const TopPageFromMainPage: React.FC<TopPageFromMainPageProps> = ({ data }
   const maxClicks = Math.max(...clickData.map(item => item.clicks));
   const displayedData = showAll ? clickData : clickData.slice(0, 3);
 
+  // 필터 정보에 따른 제목 생성
+  const getFilterTitle = () => {
+    if (!filters) return '실시간';
+    
+    const periodMap: { [key: string]: string } = {
+      'daily': '일별',
+      'weekly': '주별',
+      'monthly': '월별'
+    };
+    
+    const genderMap: { [key: string]: string } = {
+      'all': '전체',
+      'male': '남성',
+      'female': '여성'
+    };
+    
+    const ageMap: { [key: string]: string } = {
+      'all': '전체',
+      '10s': '10대',
+      '20s': '20대',
+      '30s': '30대',
+      '40s': '40대',
+      '50s': '50대',
+      '60s+': '60대+'
+    };
+    
+    const period = periodMap[filters.period] || '일별';
+    const gender = genderMap[filters.gender] || '전체';
+    const age = ageMap[filters.ageGroup] || '전체';
+    
+    return `${period} · ${gender} · ${age}`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-700">메인 페이지에서 이동하는 페이지 Top</h3>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span className="text-xs text-gray-500">실시간</span>
+          <span className="text-xs text-gray-500">{getFilterTitle()}</span>
         </div>
       </div>
       
