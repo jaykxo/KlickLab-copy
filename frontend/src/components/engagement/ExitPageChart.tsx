@@ -72,7 +72,7 @@ export const ExitPageChart: React.FC<ExitPageChartProps> = ({ data }) => {
               fill="#8884d8"
               dataKey="exitCount"
             >
-              {data.map((entry, index) => (
+              {data.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>

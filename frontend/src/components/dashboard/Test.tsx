@@ -43,7 +43,7 @@ const Test: React.FC = () => {
     { label: 'button 7', value: 0, color: '#06B6D4' }
   ]);
 
-  // 파이차트 데이터 - 버튼별 클릭 비율 (동일한 점유율)
+  // 파이차트 데이터 - 버튼별 클릭 비율 (초기 동일한 점유율)
   const [pieChartData, setPieChartData] = useState<ChartData[]>([
     { label: 'button 1', value: 14.3, color: '#EF4444' },
     { label: 'button 2', value: 14.3, color: '#3B82F6' },
@@ -79,50 +79,7 @@ const Test: React.FC = () => {
     }
   ]);
 
-  // 외부 데이터 수신 시뮬레이션 (실제로는 WebSocket이나 API 호출)
-  const simulateExternalData = (buttonIndex: number) => {
-    // 막대그래프 업데이트
-    setBarChartData(prev => prev.map((item, index) => 
-      index === buttonIndex 
-        ? { ...item, value: item.value + Math.floor(Math.random() * 100) + 50 }
-        : item
-    ));
 
-    // 파이차트 업데이트 (전체 비율 재계산)
-    setTimeout(() => {
-      setBarChartData(currentBarData => {
-        const totalClicks = currentBarData.reduce((sum, item) => sum + item.value, 0);
-        const newPieData = currentBarData.map((item, index) => ({
-          label: item.label,
-          value: Math.round((item.value / totalClicks) * 100),
-          color: pieChartData[index]?.color || '#3B82F6'
-        }));
-        setPieChartData(newPieData);
-        return currentBarData;
-      });
-    }, 100);
-
-    // 랭킹 업데이트
-    setTimeout(() => {
-      setBarChartData(currentBarData => {
-        const sortedButtons = [...currentBarData]
-          .map((item, index) => ({ ...item, index }))
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 3);
-
-        const newRankingData = sortedButtons.map((item, rankIndex) => ({
-          rank: rankIndex + 1,
-          name: item.label,
-          value: item.value,
-          change: Math.random() > 0.5 ? Math.random() * 15 : -Math.random() * 10,
-          icon: ['🔴', '🔵', '🟢'][rankIndex]
-        }));
-
-        setRankingData(newRankingData);
-        return currentBarData;
-      });
-    }, 200);
-  };
 
   // 외부 연결 시뮬레이션
   useEffect(() => {
@@ -206,8 +163,10 @@ const Test: React.FC = () => {
       }
     };
     
+
     const pollingInterval = 500;
     const interval = setInterval(pollData, pollingInterval);
+
     pollData(); // 즉시 첫 번째 호출
     
     return () => clearInterval(interval);
