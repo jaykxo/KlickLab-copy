@@ -26,11 +26,11 @@ export const StatCard: React.FC<StatCardProps> = ({ data }) => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'Users':
-        return <Users className="w-5 h-5" />;
+        return <Users className="w-6 h-6" />;
       case 'MousePointer':
-        return <MousePointer className="w-5 h-5" />;
+        return <MousePointer className="w-6 h-6" />;
       default:
-        return <Users className="w-5 h-5" />;
+        return <Users className="w-6 h-6" />;
     }
   };
 
@@ -56,7 +56,11 @@ export const StatCard: React.FC<StatCardProps> = ({ data }) => {
     }
   };
 
-  const getBgColor = (color: string) => {
+  const getGradientBg = (color: string) => {
+    return 'bg-white';
+  };
+
+  const getIconBg = (color: string) => {
     switch (color) {
       case 'blue':
         return 'bg-blue-50';
@@ -74,49 +78,52 @@ export const StatCard: React.FC<StatCardProps> = ({ data }) => {
   const getIconColor = (color: string) => {
     switch (color) {
       case 'blue':
-        return 'text-blue-600';
+        return 'text-blue-500';
       case 'green':
-        return 'text-green-600';
+        return 'text-green-500';
       case 'purple':
-        return 'text-purple-600';
+        return 'text-purple-500';
       case 'red':
-        return 'text-red-600';
+        return 'text-red-500';
       default:
-        return 'text-gray-600';
+        return 'text-gray-500';
     }
   };
 
   return (
     <div className={clsx(
-      'p-6 rounded-lg border border-gray-200',
-      getBgColor(data.color)
+      'p-3 rounded-xl border border-gray-200 shadow-sm bg-white aspect-square flex flex-col justify-center',
+      getGradientBg(data.color)
     )}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={clsx(
-            'p-2 rounded-lg',
-            getIconColor(data.color)
-          )}>
+      <div className="text-center">
+        <div className={clsx(
+          'p-2 rounded-lg shadow-sm mx-auto mb-2 w-fit',
+          getIconBg(data.color)
+        )}>
+          <div className={getIconColor(data.color)}>
             {getIcon(data.icon)}
           </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-600">{data.title}</h3>
-            <p className="text-2xl font-bold text-gray-900">
-              {data.title.includes('방문자') ? `${data.value.toLocaleString()}명` : `${data.value.toLocaleString()}회`}
-            </p>
-          </div>
         </div>
-      </div>
-      
-      <div className="mt-4 flex items-center gap-2">
-        {getChangeIcon(data.changeType)}
-        <span className={clsx(
-          'text-sm font-medium',
-          getChangeColor(data.changeType)
-        )}>
-          {data.change > 0 ? '+' : ''}{data.change}%
-        </span>
-        <span className="text-sm text-gray-500">전일 대비</span>
+        <h3 className="text-sm font-medium text-gray-600 mb-2">{data.title}</h3>
+        <p className="text-2xl font-bold text-gray-900 mb-2">
+          {data.title.includes('방문자') ? `${data.value.toLocaleString()}명` : `${data.value.toLocaleString()}회`}
+        </p>
+        
+        <div className="flex items-center justify-center gap-1">
+          <div className={clsx(
+            'p-1 rounded-full',
+            data.changeType === 'increase' ? 'bg-green-100' : 
+            data.changeType === 'decrease' ? 'bg-red-100' : 'bg-gray-100'
+          )}>
+            {getChangeIcon(data.changeType)}
+          </div>
+          <span className={clsx(
+            'text-sm font-semibold',
+            getChangeColor(data.changeType)
+          )}>
+            {data.change > 0 ? '+' : ''}{data.change}%
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -3,10 +3,18 @@ import { StatCard } from './StatCard';
 import { Summary } from './Summary';
 import { TopClicks } from './TopClicks';
 import { ClickTrend } from './ClickTrend';
+import { UserPathSankeyChart } from '../user/UserPathSankeyChart';
+import { DropoffInsightsCard } from '../engagement/DropoffInsightsCard';
+
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+
+import { AverageSessionDurationCard } from './AverageSessionDurationCard';
+import { ConversionSummaryCard } from './ConversionSummaryCard';
 
 interface VisitorsData {
   today: number;
   yesterday: number;
+  trend?: { date: string; visitors: number }[];
 }
 
 interface ClicksData {
@@ -17,29 +25,34 @@ interface ClicksData {
 export const OverviewDashboard: React.FC = () => {
   const [visitorsData, setVisitorsData] = useState<VisitorsData | null>(null);
   const [clicksData, setClicksData] = useState<ClicksData | null>(null);
+  const [userPathData, setUserPathData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // 방문자 수와 클릭 수 데이터를 동시에 가져오기
-        const [visitorsResponse, clicksResponse] = await Promise.all([
-          fetch(`http://localhost:3000/api/stats/visitors?date=${today}`),
-          fetch(`http://localhost:3000/api/stats/clicks?date=${today}`)
+        const [visitorsResponse, clicksResponse, userPathResponse] = await Promise.all([
+          fetch(`/api/stats/visitors`),
+          fetch(`/api/stats/clicks`),
+          fetch(`/api/stats/userpath-summary`)
         ]);
         
         const visitors = await visitorsResponse.json();
         const clicks = await clicksResponse.json();
-        
+        const userPath = await userPathResponse.json();
+
+        visitors.trend?.sort((a: { date: string }, b: { date: string }) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
         setVisitorsData(visitors);
         setClicksData(clicks);
+        setUserPathData(userPath.data || []);
       } catch (error) {
         console.error('Failed to fetch stats:', error);
-        // Fallback 데이터
         setVisitorsData({ today: 1234, yesterday: 1096 });
         setClicksData({ today: 9874, yesterday: 9124 });
+        setUserPathData([]);
       } finally {
         setLoading(false);
       }
@@ -47,7 +60,6 @@ export const OverviewDashboard: React.FC = () => {
 
     fetchStats();
     
-    // 30초마다 통계 갱신
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -76,11 +88,11 @@ export const OverviewDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* 요약 문장 */}
-      <Summary />
-      
-      {/* 통계 카드들 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mb-2">
+        <Summary />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           data={{
             title: "일일 방문자 수",
@@ -101,15 +113,27 @@ export const OverviewDashboard: React.FC = () => {
             color: "green"
           }}
         />
+        <AverageSessionDurationCard />
+        <ConversionSummaryCard />
       </div>
-      
-      {/* 차트들 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+
+      <div className="w-full">
+        <ClickTrend />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
           <TopClicks />
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <ClickTrend />
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+          <DropoffInsightsCard />
+        </div>
+      </div>
+
+      <div className="w-full">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 w-full">
+          <div className="text-lg font-bold mb-2">사용자 방문 경로</div>
+          <UserPathSankeyChart data={userPathData} />
         </div>
       </div>
     </div>
